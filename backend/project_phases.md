@@ -11,7 +11,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 3: MongoDB Connection & Mongoose Config (config/db.js, error handling)**
 - [x] **Phase 4: Data Modeling & Schema Design (Mongoose Schema with validations, Indexes)**
 - [x] **Phase 5: Database Seeding Script (Script to parse JSON dataset and ingest into MongoDB)**
-- [ ] **Phase 6: Basic CRUD Routes - Fetching & Creation (GET /coins, GET /coins/:id, POST /coins)**
+- [x] **Phase 6: Basic CRUD Routes - Fetching & Creation (GET /coins, GET /coins/:id, POST /coins)**
 - [ ] **Phase 7: Basic CRUD Routes - Replacement & Updates (PUT /coins/:id, PATCH /coins/:id, DELETE /coins/:id)**
 - [ ] **Phase 8: Bulk Operations & Record Checking (GET /coins/exists/:id, POST /coins/bulk-create, PATCH /coins/bulk-update, DELETE /coins/bulk-delete)**
 - [ ] **Phase 9: Coin Info Routes - Identity Filters (GET /coins/name/:coinName, GET /coins/symbol/:symbol, GET /coins/rank/:rank)**

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import coinRoutes from './routes/coinRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,9 @@ app.get('/', (req, res) => {
     env: process.env.NODE_ENV
   });
 });
+
+// API Routes
+app.use('/coins', coinRoutes);
 
 // Fallback 404 handler (route not found)
 app.use((req, res, next) => {
