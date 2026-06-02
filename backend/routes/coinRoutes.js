@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, removeCoin } from '../controllers/coinController.js';
 
 const router = express.Router();
 
@@ -11,5 +11,14 @@ router.get('/:id', getCoin);
 
 // POST /coins - Add a new cryptocurrency record
 router.post('/', addCoin);
+
+// PUT /coins/:id - Replace a cryptocurrency record
+router.put('/:id', updateCoin);
+
+// PATCH /coins/:id - Partially update a cryptocurrency record
+router.patch('/:id', updateCoin);
+
+// DELETE /coins/:id - Delete a cryptocurrency record
+router.delete('/:id', removeCoin);
 
 export default router;

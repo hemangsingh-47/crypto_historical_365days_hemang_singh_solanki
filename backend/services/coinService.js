@@ -44,8 +44,34 @@ const createCoin = async (coinData) => {
   return coin;
 };
 
+/**
+ * Update an existing coin record.
+ * @param {String} id - MongoDB document ID
+ * @param {Object} updateData - Data to update
+ * @returns {Object|null} - Updated coin document or null
+ */
+const updateCoin = async (id, updateData) => {
+  const coin = await Coin.findByIdAndUpdate(id, updateData, {
+    returnDocument: 'after',
+    runValidators: true
+  });
+  return coin;
+};
+
+/**
+ * Delete a coin record by ID.
+ * @param {String} id - MongoDB document ID
+ * @returns {Object|null} - Deleted coin document or null
+ */
+const deleteCoin = async (id) => {
+  const coin = await Coin.findByIdAndDelete(id);
+  return coin;
+};
+
 export {
   getAllCoins,
   getCoinById,
-  createCoin
+  createCoin,
+  updateCoin,
+  deleteCoin
 };
