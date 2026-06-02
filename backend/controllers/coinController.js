@@ -1,4 +1,4 @@
-import { getAllCoins, getCoinById, createCoin } from '../services/coinService.js';
+import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, deleteCoin as deleteCoinService } from '../services/coinService.js';
 
 /**
  * @desc    Fetch all cryptocurrency records (paginated)
@@ -106,4 +106,84 @@ const addCoin = async (req, res) => {
   }
 };
 
-export { getCoins, getCoin, addCoin };
+/**
+ * @desc    Update an existing cryptocurrency record
+ * @route   PUT /coins/:id
+ * @route   PATCH /coins/:id
+ * @access  Public
+ */
+const updateCoin = async (req, res) => {
+  try {
+    const coin = await updateCoinService(req.params.id, req.body);
+
+    if (!coin) {
+      return res.status(404).json({
+        success: false,
+        message: `Coin with ID ${req.params.id} not found`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Coin updated successfully',
+      data: coin
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid coin ID format: ${req.params.id}`
+      });
+    }
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update coin',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Delete a cryptocurrency record
+ * @route   DELETE /coins/:id
+ * @access  Public
+ */
+const removeCoin = async (req, res) => {
+  try {
+    const coin = await deleteCoinService(req.params.id);
+
+    if (!coin) {
+      return res.status(404).json({
+        success: false,
+        message: `Coin with ID ${req.params.id} not found`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Coin deleted successfully',
+      data: coin
+    });
+  } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid coin ID format: ${req.params.id}`
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete coin',
+      error: error.message
+    });
+  }
+};
+
+export { getCoins, getCoin, addCoin, updateCoin, removeCoin };
