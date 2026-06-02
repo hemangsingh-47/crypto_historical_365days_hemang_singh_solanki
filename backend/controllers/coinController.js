@@ -1,4 +1,4 @@
-import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, deleteCoin as deleteCoinService, checkCoinExists as checkCoinExistsService, bulkCreateCoins, bulkUpdateCoins, bulkDeleteCoins, getCoinsByName, getCoinsBySymbol, getCoinsByRank, getCoinsByMonth, getCoinsByDate, getLatestCoins, getCoinHistory } from '../services/coinService.js';
+import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, deleteCoin as deleteCoinService, checkCoinExists as checkCoinExistsService, bulkCreateCoins, bulkUpdateCoins, bulkDeleteCoins, getCoinsByName, getCoinsBySymbol, getCoinsByRank, getCoinsByMonth, getCoinsByDate, getLatestCoins, getCoinHistory, getTopMarketCapCoins, getTopVolumeCoins, getTopGainersCoins, getTopLosersCoins } from '../services/coinService.js';
 
 /**
  * @desc    Fetch all cryptocurrency records (paginated)
@@ -492,4 +492,108 @@ const getHistory = async (req, res) => {
   }
 };
 
-export { getCoins, getCoin, addCoin, updateCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory };
+/**
+ * @desc    Fetch top coins by market cap
+ * @route   GET /coins/top-market-cap
+ * @access  Public
+ */
+const getTopMarketCap = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await getTopMarketCapCoins({ page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: 'Top market cap coins fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top market cap coins',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch top coins by 24h volume
+ * @route   GET /coins/top-volume
+ * @access  Public
+ */
+const getTopVolume = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await getTopVolumeCoins({ page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: 'Top volume coins fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top volume coins',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch top gainers by daily return
+ * @route   GET /coins/top-gainers
+ * @access  Public
+ */
+const getTopGainers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await getTopGainersCoins({ page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: 'Top gainer coins fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top gainer coins',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch top losers by daily return
+ * @route   GET /coins/top-losers
+ * @access  Public
+ */
+const getTopLosers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await getTopLosersCoins({ page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: 'Top loser coins fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top loser coins',
+      error: error.message
+    });
+  }
+};
+
+export { getCoins, getCoin, addCoin, updateCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers };

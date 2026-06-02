@@ -16,7 +16,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 8: Bulk Operations & Record Checking (GET /coins/exists/:id, POST /coins/bulk-create, PATCH /coins/bulk-update, DELETE /coins/bulk-delete)**
 - [x] **Phase 9: Coin Info Routes - Identity Filters (GET /coins/name/:coinName, GET /coins/symbol/:symbol, GET /coins/rank/:rank)**
 - [x] **Phase 10: Coin Info Routes - Time Filters (GET /coins/month/:month, GET /coins/date/:date, GET /coins/latest, GET /coins/history/:coinId)**
-- [ ] **Phase 11: Top Performers & Market Standings (GET /coins/top-market-cap, GET /coins/top-volume, GET /coins/top-gainers, GET /coins/top-losers)**
+- [x] **Phase 11: Top Performers & Market Standings (GET /coins/top-market-cap, GET /coins/top-volume, GET /coins/top-gainers, GET /coins/top-losers)**
 - [ ] **Phase 12: Chronological Routes (GET /coins/oldest, GET /coins/newest, GET /coins/trending, GET /coins/recent)**
 - [ ] **Phase 13: Analytical Route Parameters (GET /coins/performance/:coinId, volatility, market-cap, volume, returns)**
 - [ ] **Phase 14: Coin Comparison & Pricing (GET /coins/compare/:coin1/:coin2, comparison of 3 coins, current price, monthly history)**

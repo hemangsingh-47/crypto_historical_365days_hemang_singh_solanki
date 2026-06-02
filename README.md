@@ -112,6 +112,14 @@ All routes are prefixed with `/coins`.
 | **GET** | `/coins/latest` | Fetch the latest single record for each unique coin, sorted by market cap |
 | **GET** | `/coins/history/:coinId` | Fetch full chronological price history for a specific coin by `coin_id` |
 
+### 5. Market Standings & Top Performers
+| HTTP Method | Route | Description |
+| :--- | :--- | :--- |
+| **GET** | `/coins/top-market-cap` | Fetch latest coin records sorted by market capitalization descending |
+| **GET** | `/coins/top-volume` | Fetch latest coin records sorted by 24h trading volume descending |
+| **GET** | `/coins/top-gainers` | Fetch latest coin records sorted by daily return percentage descending |
+| **GET** | `/coins/top-losers` | Fetch latest coin records sorted by daily return percentage ascending |
+
 ---
 
 ## 🧪 Testing with PowerShell / cURL
@@ -129,4 +137,9 @@ Invoke-RestMethod -Uri "http://localhost:5000/coins/symbol/btc" -Method GET
 ### Fetch Month Records
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:5000/coins/month/2025-12" -Method GET
+```
+
+### Fetch Top Gainers (Standings)
+```powershell
+Invoke-RestMethod -Uri "http://localhost:5000/coins/top-gainers?limit=3" -Method GET
 ```

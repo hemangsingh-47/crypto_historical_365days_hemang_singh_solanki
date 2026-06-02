@@ -311,6 +311,162 @@ const getCoinHistory = async (coinId, { page = 1, limit = 50 } = {}) => {
   };
 };
 
+/**
+ * Fetch top coins by market cap (descending).
+ * @param {Object} options - Query options (page, limit)
+ * @returns {Object} - Paginated results with metadata
+ */
+const getTopMarketCapCoins = async ({ page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+
+  const coins = await Coin.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $group: { _id: '$coin_id', latestRecord: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$latestRecord' } },
+    {
+      $addFields: {
+        market_cap_num: { $toDouble: '$market_cap' }
+      }
+    },
+    { $sort: { market_cap_num: -1 } },
+    { $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ]);
+
+  const data = coins[0].data;
+  const totalRecords = coins[0].totalCount[0]?.count || 0;
+
+  return {
+    coins: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    }
+  };
+};
+
+/**
+ * Fetch top coins by 24h volume (descending).
+ * @param {Object} options - Query options (page, limit)
+ * @returns {Object} - Paginated results with metadata
+ */
+const getTopVolumeCoins = async ({ page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+
+  const coins = await Coin.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $group: { _id: '$coin_id', latestRecord: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$latestRecord' } },
+    {
+      $addFields: {
+        volume_num: { $toDouble: '$volume' }
+      }
+    },
+    { $sort: { volume_num: -1 } },
+    { $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ]);
+
+  const data = coins[0].data;
+  const totalRecords = coins[0].totalCount[0]?.count || 0;
+
+  return {
+    coins: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    }
+  };
+};
+
+/**
+ * Fetch top gainers by daily return (descending).
+ * @param {Object} options - Query options (page, limit)
+ * @returns {Object} - Paginated results with metadata
+ */
+const getTopGainersCoins = async ({ page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+
+  const coins = await Coin.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $group: { _id: '$coin_id', latestRecord: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$latestRecord' } },
+    {
+      $addFields: {
+        daily_return_num: { $toDouble: '$daily_return' }
+      }
+    },
+    { $sort: { daily_return_num: -1 } },
+    { $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ]);
+
+  const data = coins[0].data;
+  const totalRecords = coins[0].totalCount[0]?.count || 0;
+
+  return {
+    coins: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    }
+  };
+};
+
+/**
+ * Fetch top losers by daily return (ascending).
+ * @param {Object} options - Query options (page, limit)
+ * @returns {Object} - Paginated results with metadata
+ */
+const getTopLosersCoins = async ({ page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+
+  const coins = await Coin.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $group: { _id: '$coin_id', latestRecord: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$latestRecord' } },
+    {
+      $addFields: {
+        daily_return_num: { $toDouble: '$daily_return' }
+      }
+    },
+    { $sort: { daily_return_num: 1 } },
+    { $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ]);
+
+  const data = coins[0].data;
+  const totalRecords = coins[0].totalCount[0]?.count || 0;
+
+  return {
+    coins: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    }
+  };
+};
+
 export {
   getAllCoins,
   getCoinById,
@@ -327,5 +483,9 @@ export {
   getCoinsByMonth,
   getCoinsByDate,
   getLatestCoins,
-  getCoinHistory
+  getCoinHistory,
+  getTopMarketCapCoins,
+  getTopVolumeCoins,
+  getTopGainersCoins,
+  getTopLosersCoins
 };
