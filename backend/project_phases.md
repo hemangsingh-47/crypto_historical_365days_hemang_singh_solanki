@@ -13,7 +13,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 5: Database Seeding Script (Script to parse JSON dataset and ingest into MongoDB)**
 - [x] **Phase 6: Basic CRUD Routes - Fetching & Creation (GET /coins, GET /coins/:id, POST /coins)**
 - [x] **Phase 7: Basic CRUD Routes - Replacement & Updates (PUT /coins/:id, PATCH /coins/:id, DELETE /coins/:id)**
-- [ ] **Phase 8: Bulk Operations & Record Checking (GET /coins/exists/:id, POST /coins/bulk-create, PATCH /coins/bulk-update, DELETE /coins/bulk-delete)**
+- [x] **Phase 8: Bulk Operations & Record Checking (GET /coins/exists/:id, POST /coins/bulk-create, PATCH /coins/bulk-update, DELETE /coins/bulk-delete)**
 - [ ] **Phase 9: Coin Info Routes - Identity Filters (GET /coins/name/:coinName, GET /coins/symbol/:symbol, GET /coins/rank/:rank)**
 - [ ] **Phase 10: Coin Info Routes - Time Filters (GET /coins/month/:month, GET /coins/date/:date, GET /coins/latest, GET /coins/history/:coinId)**
 - [ ] **Phase 11: Top Performers & Market Standings (GET /coins/top-market-cap, GET /coins/top-volume, GET /coins/top-gainers, GET /coins/top-losers)**

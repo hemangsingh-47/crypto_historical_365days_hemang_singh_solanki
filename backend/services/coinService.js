@@ -68,10 +68,60 @@ const deleteCoin = async (id) => {
   return coin;
 };
 
+/**
+ * Check if a coin record exists by ID.
+ * @param {String} id - MongoDB document ID
+ * @returns {Boolean} - True if exists, false otherwise
+ */
+const checkCoinExists = async (id) => {
+  const exists = await Coin.exists({ _id: id });
+  return exists !== null;
+};
+
+/**
+ * Bulk create multiple coin records.
+ * @param {Array} coinsArray - Array of coin data objects
+ * @returns {Array} - Array of newly created documents
+ */
+const bulkCreateCoins = async (coinsArray) => {
+  const coins = await Coin.insertMany(coinsArray);
+  return coins;
+};
+
+/**
+ * Bulk update multiple coin records.
+ * @param {Array} updatesArray - Array of objects containing { id, updateData }
+ * @returns {Object} - Bulk write result
+ */
+const bulkUpdateCoins = async (updatesArray) => {
+  const bulkOps = updatesArray.map((item) => ({
+    updateOne: {
+      filter: { _id: item.id },
+      update: { $set: item.updateData }
+    }
+  }));
+  const result = await Coin.bulkWrite(bulkOps);
+  return result;
+};
+
+/**
+ * Bulk delete multiple coin records by IDs.
+ * @param {Array} idsArray - Array of MongoDB document IDs
+ * @returns {Object} - Deletion result containing deletedCount
+ */
+const bulkDeleteCoins = async (idsArray) => {
+  const result = await Coin.deleteMany({ _id: { $in: idsArray } });
+  return result;
+};
+
 export {
   getAllCoins,
   getCoinById,
   createCoin,
   updateCoin,
-  deleteCoin
+  deleteCoin,
+  checkCoinExists,
+  bulkCreateCoins,
+  bulkUpdateCoins,
+  bulkDeleteCoins
 };
