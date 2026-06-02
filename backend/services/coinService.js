@@ -578,6 +578,96 @@ const getRecentCoins = async ({ page = 1, limit = 50 } = {}) => {
   };
 };
 
+/**
+ * Fetch performance statistics for a specific coin by ID.
+ * Calculates historical averages, highs, and lows using optimized aggregation.
+ * @param {string} coinId - The unique identifier of the coin (e.g. bitcoin)
+ * @param {string} [metric] - Optional filter for specific metric
+ * @returns {Object|null} - Performance data or null if not found
+ */
+const getCoinPerformance = async (coinId, metric = null) => {
+  // Check if coin exists by trying to fetch the latest record
+  const latestRecord = await Coin.findOne({
+    coin_id: { $regex: new RegExp(`^${coinId}$`, 'i') }
+  }).sort({ timestamp: -1 });
+
+  if (!latestRecord) {
+    return null;
+  }
+
+  // Calculate statistics across all history safely using $convert with onError/onNull fallbacks
+  const stats = await Coin.aggregate([
+    { $match: { coin_id: { $regex: new RegExp(`^${coinId}$`, 'i') } } },
+    {
+      $project: {
+        volatility_val: { $convert: { input: '$volatility_7d', to: 'double', onError: null, onNull: null } },
+        market_cap_val: { $convert: { input: '$market_cap', to: 'double', onError: null, onNull: null } },
+        volume_val: { $convert: { input: '$volume', to: 'double', onError: null, onNull: null } },
+        daily_return_val: { $convert: { input: '$daily_return', to: 'double', onError: null, onNull: null } }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        avgVolatility: { $avg: '$volatility_val' },
+        maxVolatility: { $max: '$volatility_val' },
+        minVolatility: { $min: '$volatility_val' },
+        avgMarketCap: { $avg: '$market_cap_val' },
+        maxMarketCap: { $max: '$market_cap_val' },
+        minMarketCap: { $min: '$market_cap_val' },
+        avgVolume: { $avg: '$volume_val' },
+        maxVolume: { $max: '$volume_val' },
+        minVolume: { $min: '$volume_val' },
+        avgDailyReturn: { $avg: '$daily_return_val' },
+        maxDailyReturn: { $max: '$daily_return_val' },
+        minDailyReturn: { $min: '$daily_return_val' }
+      }
+    }
+  ]);
+
+  if (!stats || stats.length === 0) {
+    return null;
+  }
+
+  const performance = {
+    volatility: {
+      latestVolatility: latestRecord.volatility_7d != null ? parseFloat(latestRecord.volatility_7d) : null,
+      averageVolatility: stats[0].avgVolatility,
+      maxVolatility: stats[0].maxVolatility,
+      minVolatility: stats[0].minVolatility
+    },
+    marketCap: {
+      latestMarketCap: latestRecord.market_cap != null ? parseFloat(latestRecord.market_cap) : null,
+      averageMarketCap: stats[0].avgMarketCap,
+      maxMarketCap: stats[0].maxMarketCap,
+      minMarketCap: stats[0].minMarketCap
+    },
+    volume: {
+      latestVolume: latestRecord.volume != null ? parseFloat(latestRecord.volume) : null,
+      averageVolume: stats[0].avgVolume,
+      maxVolume: stats[0].maxVolume,
+      minVolume: stats[0].minVolume
+    },
+    returns: {
+      latestDailyReturn: latestRecord.daily_return != null ? parseFloat(latestRecord.daily_return) : null,
+      averageDailyReturn: stats[0].avgDailyReturn,
+      cumulativeReturn: latestRecord.cumulative_return != null ? parseFloat(latestRecord.cumulative_return) : null,
+      maxDailyReturn: stats[0].maxDailyReturn,
+      minDailyReturn: stats[0].minDailyReturn
+    }
+  };
+
+  if (metric) {
+    const formattedMetric = metric.toLowerCase();
+    if (formattedMetric === 'volatility') return { volatility: performance.volatility };
+    if (formattedMetric === 'market-cap' || formattedMetric === 'marketcap') return { marketCap: performance.marketCap };
+    if (formattedMetric === 'volume') return { volume: performance.volume };
+    if (formattedMetric === 'returns' || formattedMetric === 'return') return { returns: performance.returns };
+  }
+
+  return performance;
+};
+
 export {
   getAllCoins,
   getCoinById,
@@ -602,5 +692,6 @@ export {
   getOldestCoins,
   getNewestCoins,
   getTrendingCoins,
-  getRecentCoins
+  getRecentCoins,
+  getCoinPerformance
 };

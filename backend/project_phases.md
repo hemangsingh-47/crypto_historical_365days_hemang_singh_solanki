@@ -18,7 +18,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 10: Coin Info Routes - Time Filters (GET /coins/month/:month, GET /coins/date/:date, GET /coins/latest, GET /coins/history/:coinId)**
 - [x] **Phase 11: Top Performers & Market Standings (GET /coins/top-market-cap, GET /coins/top-volume, GET /coins/top-gainers, GET /coins/top-losers)**
 - [x] **Phase 12: Chronological Routes (GET /coins/oldest, GET /coins/newest, GET /coins/trending, GET /coins/recent)**
-- [ ] **Phase 13: Analytical Route Parameters (GET /coins/performance/:coinId, volatility, market-cap, volume, returns)**
+- [x] **Phase 13: Analytical Route Parameters (GET /coins/performance/:coinId, volatility, market-cap, volume, returns)**
 - [ ] **Phase 14: Coin Comparison & Pricing (GET /coins/compare/:coin1/:coin2, comparison of 3 coins, current price, monthly history)**
 - [ ] **Phase 15: Query Parameters - Filtering, Sorting & Pagination (GET /coins with query parameters)**
 - [ ] **Phase 16: Dedicated Pagination & Sorting Endpoints (GET /coins/sort/* and paginated lists)**

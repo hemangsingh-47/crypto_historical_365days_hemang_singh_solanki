@@ -128,6 +128,12 @@ All routes are prefixed with `/coins`.
 | **GET** | `/coins/trending` | Fetch latest coin records sorted by 24h trading volume descending |
 | **GET** | `/coins/recent` | Fetch all historical records in order of timestamp descending (synonymous to newest) |
 
+### 7. Analytical & Performance Metrics
+| HTTP Method | Route | Description |
+| :--- | :--- | :--- |
+| **GET** | `/coins/performance/:coinId` | Fetch analytical performance dashboard (averages, volatility, extrema, returns) for a specific coin |
+
+
 ---
 
 ## 🧪 Testing with PowerShell / cURL
@@ -155,4 +161,14 @@ Invoke-RestMethod -Uri "http://localhost:5000/coins/top-gainers?limit=3" -Method
 ### Fetch Oldest Coin Logs
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:5000/coins/oldest?limit=1" -Method GET
-```
+```
+
+### Fetch Coin Performance Analytics (Phases 13)
+```powershell
+# Full dashboard
+Invoke-RestMethod -Uri "http://localhost:5000/coins/performance/bitcoin" -Method GET
+
+# Single metric query
+Invoke-RestMethod -Uri "http://localhost:5000/coins/performance/bitcoin?metric=volatility" -Method GET
+```
+
