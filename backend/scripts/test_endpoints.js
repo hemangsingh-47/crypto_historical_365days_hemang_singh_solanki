@@ -55,6 +55,63 @@ async function runTests() {
       name: '10. Rank search with invalid rank - validation check',
       path: '/coins/rank/abc',
       expectedStatus: 400
+    },
+    {
+      name: '11. Sort price-asc - Dedicated Sorting Endpoint',
+      path: '/coins/sort/price-asc?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.coins && data.coins.length === 2) {
+          return data.coins[0].price <= data.coins[1].price;
+        }
+        return true;
+      }
+    },
+    {
+      name: '12. Sort price-desc - Dedicated Sorting Endpoint',
+      path: '/coins/sort/price-desc?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.coins && data.coins.length === 2) {
+          return data.coins[0].price >= data.coins[1].price;
+        }
+        return true;
+      }
+    },
+    {
+      name: '13. Sort volume-desc - Dedicated Sorting Endpoint',
+      path: '/coins/sort/volume-desc?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.coins && data.coins.length === 2) {
+          return data.coins[0].volume >= data.coins[1].volume;
+        }
+        return true;
+      }
+    },
+    {
+      name: '14. Sort rank-asc - Dedicated Sorting Endpoint',
+      path: '/coins/sort/rank-asc?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.coins && data.coins.length === 2) {
+          return data.coins[0].market_cap_rank <= data.coins[1].market_cap_rank;
+        }
+        return true;
+      }
+    },
+    {
+      name: '15. Sort return-desc - Dedicated Sorting Endpoint',
+      path: '/coins/sort/return-desc?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.coins && data.coins.length === 2) {
+          // If daily_return is null on either, we skip direct comparison check
+          if (data.coins[0].daily_return === null || data.coins[1].daily_return === null) return true;
+          return data.coins[0].daily_return >= data.coins[1].daily_return;
+        }
+        return true;
+      }
     }
   ];
 
@@ -62,7 +119,11 @@ async function runTests() {
     try {
       const res = await fetch(`${BASE_URL}${t.path}`);
       const data = await res.json();
-      if (res.status === t.expectedStatus) {
+      let customVerifyPassed = true;
+      if (res.status === t.expectedStatus && t.verify) {
+        customVerifyPassed = t.verify(data);
+      }
+      if (res.status === t.expectedStatus && customVerifyPassed) {
         console.log(`✅ [PASS] ${t.name}`);
         if (data.coins) {
           console.log(`          Coins returned: ${data.coins.length}`);
@@ -70,6 +131,7 @@ async function runTests() {
       } else {
         console.log(`❌ [FAIL] ${t.name}`);
         console.log(`          Expected Status: ${t.expectedStatus}, Got: ${res.status}`);
+        console.log(`          Custom verification passed: ${customVerifyPassed}`);
         console.log(`          Response:`, JSON.stringify(data).substring(0, 150));
       }
     } catch (err) {

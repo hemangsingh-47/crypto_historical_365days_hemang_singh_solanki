@@ -1,5 +1,6 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc } from '../controllers/coinController.js';
+
 
 const router = express.Router();
 
@@ -50,6 +51,22 @@ router.get('/trending', getTrending);
 
 // GET /coins/recent - Fetch recent coin records
 router.get('/recent', getRecent);
+
+// GET /coins/sort/price-asc - Fetch coins sorted by price ascending
+router.get('/sort/price-asc', getSortedByPriceAsc);
+
+// GET /coins/sort/price-desc - Fetch coins sorted by price descending
+router.get('/sort/price-desc', getSortedByPriceDesc);
+
+// GET /coins/sort/volume-desc - Fetch coins sorted by volume descending
+router.get('/sort/volume-desc', getSortedByVolumeDesc);
+
+// GET /coins/sort/rank-asc - Fetch coins sorted by market cap rank ascending
+router.get('/sort/rank-asc', getSortedByRankAsc);
+
+// GET /coins/sort/return-desc - Fetch coins sorted by daily return descending
+router.get('/sort/return-desc', getSortedByReturnDesc);
+
 
 // GET /coins/performance/:coinId - Fetch performance statistics for a coin
 router.get('/performance/:coinId', getPerformance);

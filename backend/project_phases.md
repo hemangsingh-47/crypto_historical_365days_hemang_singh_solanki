@@ -21,7 +21,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 13: Analytical Route Parameters (GET /coins/performance/:coinId, volatility, market-cap, volume, returns)**
 - [x] **Phase 14: Coin Comparison & Pricing (GET /coins/compare/:coin1/:coin2, comparison of 3 coins, current price, monthly history)**
 - [x] **Phase 15: Query Parameters - Filtering, Sorting & Pagination (GET /coins with query parameters)**
-- [ ] **Phase 16: Dedicated Pagination & Sorting Endpoints (GET /coins/sort/* and paginated lists)**
+- [x] **Phase 16: Dedicated Pagination & Sorting Endpoints (GET /coins/sort/* and paginated lists)**
 - [ ] **Phase 17: Search Routes (Regex-based search endpoints: /search/coins?q=...)**
 - [ ] **Phase 18: Custom Filtering Endpoints (/coins/filter/high-price, low-price, bullish, bearish, profitable, loss-making, etc.)**
 - [ ] **Phase 19: Aggregation Analytics (Match, group, project, sort pipelines for highest/lowest/average price & volume)**

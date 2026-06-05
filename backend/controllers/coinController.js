@@ -1085,4 +1085,205 @@ const getHistoryByMonth = async (req, res) => {
   }
 };
 
-export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth };
+/**
+ * @desc    Fetch coins sorted by price ascending
+ * @route   GET /coins/sort/price-asc
+ * @access  Public
+ */
+const getSortedByPriceAsc = async (req, res) => {
+  try {
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+    const { fields, ...queryParams } = req.query;
+
+    const result = await getAllCoins({
+      page,
+      limit,
+      sort: '+price',
+      fields,
+      queryParams
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coins sorted by price ascending fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch coins sorted by price ascending',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch coins sorted by price descending
+ * @route   GET /coins/sort/price-desc
+ * @access  Public
+ */
+const getSortedByPriceDesc = async (req, res) => {
+  try {
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+    const { fields, ...queryParams } = req.query;
+
+    const result = await getAllCoins({
+      page,
+      limit,
+      sort: '-price',
+      fields,
+      queryParams
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coins sorted by price descending fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch coins sorted by price descending',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch coins sorted by volume descending
+ * @route   GET /coins/sort/volume-desc
+ * @access  Public
+ */
+const getSortedByVolumeDesc = async (req, res) => {
+  try {
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+    const { fields, ...queryParams } = req.query;
+
+    const result = await getAllCoins({
+      page,
+      limit,
+      sort: '-volume',
+      fields,
+      queryParams
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coins sorted by volume descending fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch coins sorted by volume descending',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch coins sorted by market cap rank ascending
+ * @route   GET /coins/sort/rank-asc
+ * @access  Public
+ */
+const getSortedByRankAsc = async (req, res) => {
+  try {
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+    const { fields, ...queryParams } = req.query;
+
+    const result = await getAllCoins({
+      page,
+      limit,
+      sort: '+rank',
+      fields,
+      queryParams
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coins sorted by rank ascending fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch coins sorted by rank ascending',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch coins sorted by daily return descending
+ * @route   GET /coins/sort/return-desc
+ * @access  Public
+ */
+const getSortedByReturnDesc = async (req, res) => {
+  try {
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+    const { fields, ...queryParams } = req.query;
+
+    const result = await getAllCoins({
+      page,
+      limit,
+      sort: '-dailyReturn',
+      fields,
+      queryParams
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coins sorted by daily return descending fetched successfully',
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch coins sorted by daily return descending',
+      error: error.message
+    });
+  }
+};
+
+export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc };
+
