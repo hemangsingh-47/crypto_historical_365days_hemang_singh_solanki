@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 /**
@@ -121,6 +122,109 @@ export const verifyEmail = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Email verification failed',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Authenticate user and get JWT token
+ * @route   POST /auth/login
+ * @access  Public
+ */
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Check if user is verified
+    if (!user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please verify your email address before logging in'
+      });
+    }
+
+    // Sign JWT token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || 'supersecretkey123',
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Login failed',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Logout user (stateless token clearance direction)
+ * @route   POST /auth/logout
+ * @access  Public
+ */
+export const logoutUser = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Logout successful. Please delete your access token from client-side storage.'
+  });
+};
+
+/**
+ * @desc    Get current user profile
+ * @route   GET /auth/profile
+ * @access  Private
+ */
+export const getUserProfile = async (req, res) => {
+  try {
+    // req.user is populated by protect middleware
+    res.status(200).json({
+      success: true,
+      data: req.user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve profile',
       error: error.message
     });
   }

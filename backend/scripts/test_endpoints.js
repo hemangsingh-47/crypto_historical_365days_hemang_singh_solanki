@@ -429,6 +429,93 @@ async function runTests() {
       console.log('❌ Skipping valid token verification test: registration token was not retrieved.');
     }
 
+    // (e) Login with incorrect credentials (should fail)
+    const loginBadRes = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: uniqueEmail, password: 'wrongpassword' })
+    });
+    const loginBadData = await loginBadRes.json();
+    if (loginBadRes.status === 400 && !loginBadData.success) {
+      console.log('✅ [PASS] POST /auth/login bad credentials rejected (400 Bad Request)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/login bad credentials accepted:', loginBadRes.status, loginBadData);
+    }
+
+    // (f) Login with unverified account (should fail)
+    const unverifiedEmail = `unverified_${Date.now()}@example.com`;
+    const regUnvRes = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Unverified User', email: unverifiedEmail, password: 'password123' })
+    });
+    const regUnvData = await regUnvRes.json();
+    if (regUnvRes.status === 201) {
+      const loginUnvRes = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: unverifiedEmail, password: 'password123' })
+      });
+      const loginUnvData = await loginUnvRes.json();
+      if (loginUnvRes.status === 400 && !loginUnvData.success && loginUnvData.message.includes('verify')) {
+        console.log('✅ [PASS] POST /auth/login unverified account rejected (400 Bad Request)');
+      } else {
+        console.log('❌ [FAIL] POST /auth/login unverified account accepted:', loginUnvRes.status, loginUnvData);
+      }
+    } else {
+      console.log('❌ Skipping unverified account login test: registration failed.');
+    }
+
+    // (g) Login with verified account (should succeed and return token)
+    let loginToken = '';
+    const loginGoodRes = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: uniqueEmail, password: 'password123' })
+    });
+    const loginGoodData = await loginGoodRes.json();
+    if (loginGoodRes.status === 200 && loginGoodData.success && loginGoodData.token) {
+      console.log('✅ [PASS] POST /auth/login verified credentials logged in successfully');
+      loginToken = loginGoodData.token;
+    } else {
+      console.log('❌ [FAIL] POST /auth/login verified credentials failed:', loginGoodRes.status, loginGoodData);
+    }
+
+    // (h) Fetch profile without token (should fail)
+    const profileNoTokenRes = await fetch(`${BASE_URL}/auth/profile`);
+    const profileNoTokenData = await profileNoTokenRes.json();
+    if (profileNoTokenRes.status === 401 && !profileNoTokenData.success) {
+      console.log('✅ [PASS] GET /auth/profile without token rejected (401 Unauthorized)');
+    } else {
+      console.log('❌ [FAIL] GET /auth/profile without token accepted:', profileNoTokenRes.status, profileNoTokenData);
+    }
+
+    // (i) Fetch profile with valid token (should succeed)
+    if (loginToken) {
+      const profileRes = await fetch(`${BASE_URL}/auth/profile`, {
+        headers: { 'Authorization': `Bearer ${loginToken}` }
+      });
+      const profileData = await profileRes.json();
+      if (profileRes.status === 200 && profileData.success && profileData.data.email === uniqueEmail) {
+        console.log('✅ [PASS] GET /auth/profile with valid Bearer token retrieved successfully');
+      } else {
+        console.log('❌ [FAIL] GET /auth/profile with valid token failed:', profileRes.status, profileData);
+      }
+    } else {
+      console.log('❌ Skipping profile validation test: login token was not retrieved.');
+    }
+
+    // (j) Logout (should succeed)
+    const logoutRes = await fetch(`${BASE_URL}/auth/logout`, {
+      method: 'POST'
+    });
+    const logoutData = await logoutRes.json();
+    if (logoutRes.status === 200 && logoutData.success) {
+      console.log('✅ [PASS] POST /auth/logout succeeded');
+    } else {
+      console.log('❌ [FAIL] POST /auth/logout failed:', logoutRes.status, logoutData);
+    }
+
   } catch (err) {
     console.log('❌ [ERROR] Auth tests threw error:', err.message);
   }
