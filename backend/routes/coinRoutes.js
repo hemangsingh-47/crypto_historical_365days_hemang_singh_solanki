@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin, updateCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth } from '../controllers/coinController.js';
 
 const router = express.Router();
 
@@ -85,7 +85,7 @@ router.get('/:id', getCoin);
 router.post('/', addCoin);
 
 // PUT /coins/:id - Replace a cryptocurrency record
-router.put('/:id', updateCoin);
+router.put('/:id', replaceCoin);
 
 // PATCH /coins/:id - Partially update a cryptocurrency record
 router.patch('/:id', updateCoin);

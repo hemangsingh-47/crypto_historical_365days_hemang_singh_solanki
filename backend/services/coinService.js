@@ -46,18 +46,257 @@ const roundMetric = (value) => {
   return Number(value.toFixed(2));
 };
 
+const parseNumberParam = (value, fieldName) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const val = Array.isArray(value) ? value[value.length - 1] : value;
+  const parsed = Number(val);
+  if (Number.isNaN(parsed)) {
+    throw createServiceError(`${fieldName} must be a valid number`, 400);
+  }
+  return parsed;
+};
+
+const getStringParam = (value) => {
+  if (value === undefined || value === null) return undefined;
+  const val = Array.isArray(value) ? value[value.length - 1] : value;
+  return String(val).trim();
+};
+
+// ==========================================
+// Phase 15: Query Parameter Helpers
+// ==========================================
+
 /**
- * Fetch all coin records with default pagination.
- * @param {Object} options - Query options (page, limit)
- * @returns {Object} - Paginated results with metadata
+ * Map of allowed sort fields to their MongoDB field names.
  */
-const getAllCoins = async ({ page = 1, limit = 50 } = {}) => {
+const ALLOWED_SORT_FIELDS = {
+  price: 'price',
+  volume: 'volume',
+  marketCap: 'market_cap',
+  market_cap: 'market_cap',
+  rank: 'market_cap_rank',
+  dailyReturn: 'daily_return',
+  daily_return: 'daily_return',
+  timestamp: 'timestamp',
+  date: 'date',
+  symbol: 'symbol',
+  coin_name: 'coin_name',
+  volatility: 'volatility_7d'
+};
+
+/**
+ * Build a MongoDB filter object from the supplied query parameters.
+ * @param {Object} query - Express req.query object
+ * @returns {Object} - MongoDB filter document
+ */
+const buildQueryFilter = (query) => {
+  const filter = {};
+
+  // --- Price filters ---
+  const price = parseNumberParam(query.price, 'price');
+  const minPrice = parseNumberParam(query.minPrice, 'minPrice');
+  const maxPrice = parseNumberParam(query.maxPrice, 'maxPrice');
+
+  if (price !== undefined) {
+    filter.price = price;
+  } else if (minPrice !== undefined || maxPrice !== undefined) {
+    filter.price = {};
+    if (minPrice !== undefined) filter.price.$gte = minPrice;
+    if (maxPrice !== undefined) filter.price.$lte = maxPrice;
+  }
+
+  // --- Volume filters ---
+  const volume = parseNumberParam(query.volume, 'volume');
+  const minVolume = parseNumberParam(query.minVolume, 'minVolume');
+  const maxVolume = parseNumberParam(query.maxVolume, 'maxVolume');
+
+  if (volume !== undefined) {
+    filter.volume = volume;
+  } else if (minVolume !== undefined || maxVolume !== undefined) {
+    filter.volume = {};
+    if (minVolume !== undefined) filter.volume.$gte = minVolume;
+    if (maxVolume !== undefined) filter.volume.$lte = maxVolume;
+  }
+
+  // --- Rank filter ---
+  const rank = parseNumberParam(query.rank, 'rank');
+  if (rank !== undefined) {
+    filter.market_cap_rank = rank;
+  }
+
+  // --- Month filter ---
+  const month = getStringParam(query.month);
+  if (month !== undefined) {
+    if (!MONTH_PATTERN.test(month)) {
+      throw createServiceError('Invalid month format. Use YYYY-MM', 400);
+    }
+    filter.month = month;
+  }
+
+  // --- Date filter ---
+  const date = getStringParam(query.date);
+  if (date !== undefined) {
+    const DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+    if (!DATE_PATTERN.test(date)) {
+      throw createServiceError('Invalid date format. Use YYYY-MM-DD', 400);
+    }
+    filter.date = date;
+  }
+
+  // --- Daily return filters ---
+  const dailyReturn = parseNumberParam(query.dailyReturn, 'dailyReturn');
+  const minDailyReturn = parseNumberParam(query.minDailyReturn, 'minDailyReturn');
+  const maxDailyReturn = parseNumberParam(query.maxDailyReturn, 'maxDailyReturn');
+
+  if (dailyReturn !== undefined) {
+    filter.daily_return = dailyReturn;
+  } else if (minDailyReturn !== undefined || maxDailyReturn !== undefined) {
+    filter.daily_return = {};
+    if (minDailyReturn !== undefined) filter.daily_return.$gte = minDailyReturn;
+    if (maxDailyReturn !== undefined) filter.daily_return.$lte = maxDailyReturn;
+  }
+
+  // --- Volatility filters ---
+  const volatility = parseNumberParam(query.volatility, 'volatility');
+  const minVolatility = parseNumberParam(query.minVolatility, 'minVolatility');
+  const maxVolatility = parseNumberParam(query.maxVolatility, 'maxVolatility');
+
+  if (volatility !== undefined) {
+    filter.volatility_7d = volatility;
+  } else if (minVolatility !== undefined || maxVolatility !== undefined) {
+    filter.volatility_7d = {};
+    if (minVolatility !== undefined) filter.volatility_7d.$gte = minVolatility;
+    if (maxVolatility !== undefined) filter.volatility_7d.$lte = maxVolatility;
+  }
+
+  // --- Market cap filters ---
+  const marketCap = parseNumberParam(query.marketCap, 'marketCap');
+  const minMarketCap = parseNumberParam(query.minMarketCap, 'minMarketCap');
+  const maxMarketCap = parseNumberParam(query.maxMarketCap, 'maxMarketCap');
+
+  if (marketCap !== undefined) {
+    filter.market_cap = marketCap;
+  } else if (minMarketCap !== undefined || maxMarketCap !== undefined) {
+    filter.market_cap = {};
+    if (minMarketCap !== undefined) filter.market_cap.$gte = minMarketCap;
+    if (maxMarketCap !== undefined) filter.market_cap.$lte = maxMarketCap;
+  }
+
+  // --- Symbol filter (case-insensitive exact match) ---
+  const symbol = getStringParam(query.symbol);
+  if (symbol !== undefined) {
+    filter.symbol = { $regex: new RegExp(`^${escapeRegex(symbol)}$`, 'i') };
+  }
+
+  // --- Coin name filter (case-insensitive partial match) ---
+  const coinName = getStringParam(query.coin_name || query.coinName);
+  if (coinName !== undefined) {
+    filter.coin_name = { $regex: new RegExp(escapeRegex(coinName), 'i') };
+  }
+
+  // --- Coin ID filter (case-insensitive exact match) ---
+  const coinId = getStringParam(query.coin_id || query.coinId);
+  if (coinId !== undefined) {
+    filter.coin_id = { $regex: new RegExp(`^${escapeRegex(coinId)}$`, 'i') };
+  }
+
+  return filter;
+};
+
+/**
+ * Parse the `sort` query parameter into a Mongoose-compatible sort object.
+ * Supports: sort=price, sort=-price, sort=+price, sort=price:asc, sort=price,-volume
+ * @param {String|Array} sortParam - Raw sort query parameter
+ * @returns {Object} - Mongoose sort document
+ */
+const buildSortObject = (sortParam) => {
+  if (!sortParam) return { timestamp: -1 };
+
+  const sortStr = Array.isArray(sortParam) ? sortParam.join(',') : String(sortParam);
+  const sortFields = sortStr.split(',');
+  const sortObject = {};
+
+  for (const field of sortFields) {
+    let trimmedField = field.trim();
+    let direction = -1; // default descending
+
+    // Handle +/- prefix
+    if (trimmedField.startsWith('-')) {
+      direction = -1;
+      trimmedField = trimmedField.slice(1);
+    } else if (trimmedField.startsWith('+')) {
+      direction = 1;
+      trimmedField = trimmedField.slice(1);
+    }
+
+    // Handle :asc / :desc suffix
+    if (trimmedField.includes(':')) {
+      const [fieldName, dir] = trimmedField.split(':');
+      trimmedField = fieldName;
+      if (dir?.toLowerCase() === 'asc') direction = 1;
+      else if (dir?.toLowerCase() === 'desc') direction = -1;
+    }
+
+    const mappedField = ALLOWED_SORT_FIELDS[trimmedField];
+    if (mappedField) {
+      sortObject[mappedField] = direction;
+    }
+  }
+
+  // Fallback if no valid sort fields matched
+  return Object.keys(sortObject).length > 0 ? sortObject : { timestamp: -1 };
+};
+
+/**
+ * Build a Mongoose field projection from the `fields` query parameter.
+ * @param {String|Array} fieldsParam - Comma-separated list of field names or array of them
+ * @returns {Object|null} - Mongoose select object or null for all fields
+ */
+const buildFieldProjection = (fieldsParam) => {
+  if (!fieldsParam) return null;
+
+  const fieldsStr = Array.isArray(fieldsParam) ? fieldsParam.join(',') : String(fieldsParam);
+  const requestedFields = fieldsStr.split(',').map((f) => f.trim()).filter(Boolean);
+  if (!requestedFields.length) return null;
+
+  const projection = {};
+  for (const field of requestedFields) {
+    projection[field] = 1;
+  }
+  return projection;
+};
+
+
+// ==========================================
+// Core CRUD Operations
+// ==========================================
+
+/**
+ * Fetch all coin records with advanced query parameter support.
+ * Supports filtering, sorting, pagination, and field projection.
+ * @param {Object} options - Query options
+ * @returns {Object} - Paginated and filtered results with metadata
+ */
+const getAllCoins = async ({ page = 1, limit = 50, sort, fields, queryParams = {} } = {}) => {
   const skip = (page - 1) * limit;
-  const totalRecords = await Coin.countDocuments();
-  const coins = await Coin.find()
+
+  // Build the filter, sort, and projection from query parameters
+  const filter = buildQueryFilter(queryParams);
+  const sortObject = buildSortObject(sort);
+  const projection = buildFieldProjection(fields);
+
+  const totalRecords = await Coin.countDocuments(filter);
+
+  let query = Coin.find(filter)
     .skip(skip)
     .limit(limit)
-    .sort({ timestamp: -1 });
+    .sort(sortObject);
+
+  if (projection) {
+    query = query.select(projection);
+  }
+
+  const coins = await query;
 
   return {
     coins,
@@ -66,7 +305,9 @@ const getAllCoins = async ({ page = 1, limit = 50 } = {}) => {
       totalPages: Math.ceil(totalRecords / limit),
       totalRecords,
       limit
-    }
+    },
+    appliedFilters: Object.keys(filter).length > 0 ? filter : undefined,
+    appliedSort: sortObject
   };
 };
 
@@ -160,6 +401,10 @@ const bulkDeleteCoins = async (idsArray) => {
   return result;
 };
 
+// ==========================================
+// Coin Info Routes Services
+// ==========================================
+
 /**
  * Fetch coin records by name (case-insensitive).
  * @param {String} name - Coin name
@@ -167,8 +412,13 @@ const bulkDeleteCoins = async (idsArray) => {
  * @returns {Object} - Paginated results with metadata
  */
 const getCoinsByName = async (name, { page = 1, limit = 50 } = {}) => {
+  const normalizedName = name?.trim();
+  if (!normalizedName) {
+    throw createServiceError('coinName parameter is required', 400);
+  }
+
   const skip = (page - 1) * limit;
-  const filter = { coin_name: { $regex: name, $options: 'i' } };
+  const filter = { coin_name: { $regex: escapeRegex(normalizedName), $options: 'i' } };
   
   const totalRecords = await Coin.countDocuments(filter);
   const coins = await Coin.find(filter)
@@ -194,8 +444,13 @@ const getCoinsByName = async (name, { page = 1, limit = 50 } = {}) => {
  * @returns {Object} - Paginated results with metadata
  */
 const getCoinsBySymbol = async (symbol, { page = 1, limit = 50 } = {}) => {
+  const normalizedSymbol = symbol?.trim();
+  if (!normalizedSymbol) {
+    throw createServiceError('symbol parameter is required', 400);
+  }
+
   const skip = (page - 1) * limit;
-  const filter = { symbol: symbol.toUpperCase() };
+  const filter = { symbol: normalizedSymbol.toUpperCase() };
   
   const totalRecords = await Coin.countDocuments(filter);
   const coins = await Coin.find(filter)
@@ -216,14 +471,18 @@ const getCoinsBySymbol = async (symbol, { page = 1, limit = 50 } = {}) => {
 
 /**
  * Fetch coin records by market cap rank.
- * @param {Number} rank - Market cap rank
+ * @param {Number|String} rank - Market cap rank
  * @param {Object} options - Query options (page, limit)
  * @returns {Object} - Paginated results with metadata
  */
 const getCoinsByRank = async (rank, { page = 1, limit = 50 } = {}) => {
+  const parsedRank = Number(rank);
+  if (Number.isNaN(parsedRank) || parsedRank <= 0) {
+    throw createServiceError('rank parameter must be a positive integer', 400);
+  }
+
   const skip = (page - 1) * limit;
-  // Use $expr to handle the case where market_cap_rank might be stored as a string in the DB
-  const filter = { $expr: { $eq: [{ $toInt: "$market_cap_rank" }, Number(rank)] } };
+  const filter = { market_cap_rank: parsedRank };
   
   const totalRecords = await Coin.countDocuments(filter);
   const coins = await Coin.find(filter)
@@ -249,8 +508,13 @@ const getCoinsByRank = async (rank, { page = 1, limit = 50 } = {}) => {
  * @returns {Object} - Paginated results with metadata
  */
 const getCoinsByMonth = async (month, { page = 1, limit = 50 } = {}) => {
+  const normalizedMonth = month?.trim();
+  if (!normalizedMonth || !MONTH_PATTERN.test(normalizedMonth)) {
+    throw createServiceError('Invalid month format. Use YYYY-MM', 400);
+  }
+
   const skip = (page - 1) * limit;
-  const filter = { month };
+  const filter = { month: normalizedMonth };
 
   const totalRecords = await Coin.countDocuments(filter);
   const coins = await Coin.find(filter)
@@ -276,8 +540,14 @@ const getCoinsByMonth = async (month, { page = 1, limit = 50 } = {}) => {
  * @returns {Object} - Paginated results with metadata
  */
 const getCoinsByDate = async (date, { page = 1, limit = 50 } = {}) => {
+  const normalizedDate = date?.trim();
+  const DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+  if (!normalizedDate || !DATE_PATTERN.test(normalizedDate)) {
+    throw createServiceError('Invalid date format. Use YYYY-MM-DD', 400);
+  }
+
   const skip = (page - 1) * limit;
-  const filter = { date };
+  const filter = { date: normalizedDate };
 
   const totalRecords = await Coin.countDocuments(filter);
   const coins = await Coin.find(filter)
@@ -356,6 +626,10 @@ const getCoinHistory = async (coinId, { page = 1, limit = 50 } = {}) => {
     }
   };
 };
+
+// ==========================================
+// Top Performers & Market Standings
+// ==========================================
 
 /**
  * Fetch top coins by market cap (descending).
@@ -513,6 +787,10 @@ const getTopLosersCoins = async ({ page = 1, limit = 50 } = {}) => {
   };
 };
 
+// ==========================================
+// Chronological Routes
+// ==========================================
+
 /**
  * Fetch oldest coin records in chronological order (timestamp ascending).
  * @param {Object} options - Query options (page, limit)
@@ -623,6 +901,10 @@ const getRecentCoins = async ({ page = 1, limit = 50 } = {}) => {
     }
   };
 };
+
+// ==========================================
+// Analytical & Comparison Services
+// ==========================================
 
 /**
  * Fetch performance statistics for a specific coin by ID.
@@ -922,11 +1204,26 @@ const getCoinHistoryByMonth = async (coinId, month, { page = 1, limit = 50 } = {
   };
 };
 
+/**
+ * Replace a coin record by ID (fully overwrites the document).
+ * @param {String} id - MongoDB document ID
+ * @param {Object} replacementData - Complete replacement document data
+ * @returns {Object|null} - Replaced coin document or null
+ */
+const replaceCoin = async (id, replacementData) => {
+  const coin = await Coin.findOneAndReplace({ _id: id }, replacementData, {
+    returnDocument: 'after',
+    runValidators: true
+  });
+  return coin;
+};
+
 export {
   getAllCoins,
   getCoinById,
   createCoin,
   updateCoin,
+  replaceCoin,
   deleteCoin,
   checkCoinExists,
   bulkCreateCoins,
@@ -953,3 +1250,4 @@ export {
   getCurrentPrice,
   getCoinHistoryByMonth
 };
+
