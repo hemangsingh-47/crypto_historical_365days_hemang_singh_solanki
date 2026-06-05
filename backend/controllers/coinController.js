@@ -1,4 +1,4 @@
-import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, replaceCoin as replaceCoinService, deleteCoin as deleteCoinService, checkCoinExists as checkCoinExistsService, bulkCreateCoins, bulkUpdateCoins, bulkDeleteCoins, getCoinsByName, getCoinsBySymbol, getCoinsByRank, getCoinsByMonth, getCoinsByDate, getLatestCoins, getCoinHistory, getTopMarketCapCoins, getTopVolumeCoins, getTopGainersCoins, getTopLosersCoins, getOldestCoins, getNewestCoins, getTrendingCoins, getRecentCoins, getCoinPerformance, compareTwoCoins, compareThreeCoins, getCurrentPrice, getCoinHistoryByMonth, searchCoins as searchCoinsService, getFilteredCoins as getFilteredCoinsService, getAnalyticsSummary as getAnalyticsSummaryService } from '../services/coinService.js';
+import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, replaceCoin as replaceCoinService, deleteCoin as deleteCoinService, checkCoinExists as checkCoinExistsService, bulkCreateCoins, bulkUpdateCoins, bulkDeleteCoins, getCoinsByName, getCoinsBySymbol, getCoinsByRank, getCoinsByMonth, getCoinsByDate, getLatestCoins, getCoinHistory, getTopMarketCapCoins, getTopVolumeCoins, getTopGainersCoins, getTopLosersCoins, getOldestCoins, getNewestCoins, getTrendingCoins, getRecentCoins, getCoinPerformance, compareTwoCoins, compareThreeCoins, getCurrentPrice, getCoinHistoryByMonth, searchCoins as searchCoinsService, getFilteredCoins as getFilteredCoinsService, getAnalyticsSummary as getAnalyticsSummaryService, getGlobalMarketStats as getGlobalMarketStatsService, getPriceDistribution as getPriceDistributionService, getChronologicalSummary as getChronologicalSummaryService } from '../services/coinService.js';
 
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -1397,6 +1397,94 @@ const getAnalyticsSummary = async (req, res) => {
   }
 };
 
-export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, searchCoins, getFilteredCoins, getAnalyticsSummary };
+/**
+ * @desc    Fetch global market capitalization and trading volume statistics
+ * @route   GET /coins/analytics/global
+ * @access  Public
+ */
+const getGlobalStats = async (req, res) => {
+  try {
+    const result = await getGlobalMarketStatsService(req.query);
+
+    res.status(200).json({
+      success: true,
+      message: 'Global market capitalization statistics fetched successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch global market statistics',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch price distribution bins for graph/chart calculations
+ * @route   GET /coins/analytics/price-distribution
+ * @access  Public
+ */
+const getPriceDistribution = async (req, res) => {
+  try {
+    const result = await getPriceDistributionService(req.query);
+
+    res.status(200).json({
+      success: true,
+      message: 'Price distribution statistics fetched successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch price distribution statistics',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Fetch chronological summaries (average prices/volumes) grouped daily/monthly/yearly
+ * @route   GET /coins/analytics/chronological-summary
+ * @access  Public
+ */
+const getChronologicalSummary = async (req, res) => {
+  try {
+    const interval = req.query.interval || 'monthly';
+    const ALLOWED_INTERVALS = ['daily', 'monthly', 'yearly'];
+    if (!ALLOWED_INTERVALS.includes(interval)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid interval. Allowed values are: ${ALLOWED_INTERVALS.join(', ')}`
+      });
+    }
+
+    const page = parsePositiveInteger(req.query.page, 1, 'page');
+    const limit = parsePositiveInteger(req.query.limit, 50, 'limit');
+
+    const result = await getChronologicalSummaryService(interval, req.query, { page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: `Chronological summary (${interval}) fetched successfully`,
+      ...result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch chronological summaries',
+      error: error.message
+    });
+  }
+};
+
+export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, searchCoins, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary };
 
 

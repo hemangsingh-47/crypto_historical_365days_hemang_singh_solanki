@@ -226,6 +226,35 @@ async function runTests() {
         }
         return true;
       }
+    },
+    {
+      name: '31. Analytics global - GET /coins/analytics/global',
+      path: '/coins/analytics/global',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.data && typeof data.data.totalMarketCap === 'number';
+      }
+    },
+    {
+      name: '32. Analytics price-distribution - GET /coins/analytics/price-distribution',
+      path: '/coins/analytics/price-distribution',
+      expectedStatus: 200,
+      verify: (data) => {
+        return Array.isArray(data.data) && data.data.length === 5 && typeof data.data[0].count === 'number';
+      }
+    },
+    {
+      name: '33. Analytics chronological summary - GET /coins/analytics/chronological-summary',
+      path: '/coins/analytics/chronological-summary?interval=yearly',
+      expectedStatus: 200,
+      verify: (data) => {
+        return Array.isArray(data.summary) && data.summary.length > 0 && typeof data.summary[0].averagePrice === 'number';
+      }
+    },
+    {
+      name: '34. Analytics chronological summary invalid - GET /coins/analytics/chronological-summary?interval=invalid',
+      path: '/coins/analytics/chronological-summary?interval=invalid',
+      expectedStatus: 400
     }
   ];
 

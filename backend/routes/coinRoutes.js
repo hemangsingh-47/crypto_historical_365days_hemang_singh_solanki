@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins, getAnalyticsSummary } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary } from '../controllers/coinController.js';
 
 
 const router = express.Router();
@@ -69,6 +69,15 @@ router.get('/sort/return-desc', getSortedByReturnDesc);
 
 // GET /coins/analytics/summary - Fetch summary analytics (average/highest/lowest price & volume) grouped by coin
 router.get('/analytics/summary', getAnalyticsSummary);
+
+// GET /coins/analytics/global - Fetch global market cap and volume stats
+router.get('/analytics/global', getGlobalStats);
+
+// GET /coins/analytics/price-distribution - Fetch price distribution buckets for charts
+router.get('/analytics/price-distribution', getPriceDistribution);
+
+// GET /coins/analytics/chronological-summary - Fetch chronological analytics (grouped daily/monthly/yearly)
+router.get('/analytics/chronological-summary', getChronologicalSummary);
 
 // GET /coins/filter/:filterType - Fetch coins filtered by criteria (high-price, low-price, bullish, bearish, profitable, loss-making)
 router.get('/filter/:filterType', getFilteredCoins);

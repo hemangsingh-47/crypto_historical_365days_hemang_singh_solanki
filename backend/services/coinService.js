@@ -1467,6 +1467,160 @@ const getAnalyticsSummary = async (queryParams = {}, { page = 1, limit = 50 } = 
   };
 };
 
+/**
+ * Fetch global market statistics (total market cap, averages, active coin counts, log counts).
+ * @param {Object} queryParams - Filters to restrict scope (e.g. month, date)
+ * @returns {Object} - Global aggregated statistics
+ */
+const getGlobalMarketStats = async (queryParams = {}) => {
+  const filter = buildQueryFilter(queryParams);
+  const pipeline = [
+    { $match: filter },
+    {
+      $group: {
+        _id: null,
+        totalMarketCap: { $sum: '$market_cap' },
+        averageMarketCap: { $avg: '$market_cap' },
+        totalVolume: { $sum: '$volume' },
+        averageVolume: { $avg: '$volume' },
+        uniqueCoins: { $addToSet: '$coin_id' },
+        recordCount: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        totalMarketCap: { $round: ['$totalMarketCap', 2] },
+        averageMarketCap: { $round: ['$averageMarketCap', 2] },
+        totalVolume: { $round: ['$totalVolume', 2] },
+        averageVolume: { $round: ['$averageVolume', 2] },
+        uniqueCoinsCount: { $size: '$uniqueCoins' },
+        recordCount: 1
+      }
+    }
+  ];
+
+  const result = await Coin.aggregate(pipeline);
+  return result[0] || {
+    totalMarketCap: 0,
+    averageMarketCap: 0,
+    totalVolume: 0,
+    averageVolume: 0,
+    uniqueCoinsCount: 0,
+    recordCount: 0
+  };
+};
+
+/**
+ * Fetch price distribution grouping records into 5 ranges for charts.
+ * @param {Object} queryParams - Dynamic match filters
+ * @returns {Array} - List of 5 buckets with counts and active symbol counts
+ */
+const getPriceDistribution = async (queryParams = {}) => {
+  const filter = buildQueryFilter(queryParams);
+  const pipeline = [
+    { $match: filter },
+    {
+      $bucket: {
+        groupBy: '$price',
+        boundaries: [0, 1, 10, 100, 1000],
+        default: 1000,
+        output: {
+          count: { $sum: 1 },
+          uniqueSymbols: { $addToSet: '$symbol' }
+        }
+      }
+    }
+  ];
+
+  const buckets = await Coin.aggregate(pipeline);
+
+  const distributionMap = {
+    0: { range: 'Under $1 (Micro)', boundaryLower: 0, count: 0, uniqueCoinsCount: 0 },
+    1: { range: '$1 - $10 (Small)', boundaryLower: 1, count: 0, uniqueCoinsCount: 0 },
+    10: { range: '$10 - $100 (Medium)', boundaryLower: 10, count: 0, uniqueCoinsCount: 0 },
+    100: { range: '$100 - $1,000 (Large)', boundaryLower: 100, count: 0, uniqueCoinsCount: 0 },
+    1000: { range: '$1,000+ (Mega)', boundaryLower: 1000, count: 0, uniqueCoinsCount: 0 }
+  };
+
+  for (const b of buckets) {
+    if (distributionMap[b._id]) {
+      distributionMap[b._id].count = b.count;
+      distributionMap[b._id].uniqueCoinsCount = b.uniqueSymbols.length;
+    }
+  }
+
+  return Object.values(distributionMap);
+};
+
+/**
+ * Fetch chronological summary analytics grouped by interval (daily, monthly, yearly).
+ * @param {String} interval - daily | monthly | yearly
+ * @param {Object} queryParams - Match filters
+ * @param {Object} options - Pagination options
+ * @returns {Object} - Chronological stats and pagination info
+ */
+const getChronologicalSummary = async (interval, queryParams = {}, { page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+  const filter = buildQueryFilter(queryParams);
+
+  let groupId = '$month'; // Default monthly
+  if (interval === 'daily') {
+    groupId = '$date';
+  } else if (interval === 'yearly') {
+    groupId = { $substr: ['$date', 0, 4] };
+  }
+
+  const pipeline = [
+    { $match: filter },
+    {
+      $group: {
+        _id: groupId,
+        intervalValue: { $first: groupId },
+        averagePrice: { $avg: '$price' },
+        totalVolume: { $sum: '$volume' },
+        averageVolume: { $avg: '$volume' },
+        averageMarketCap: { $avg: '$market_cap' },
+        recordCount: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        intervalValue: '$_id',
+        averagePrice: { $round: ['$averagePrice', 2] },
+        totalVolume: { $round: ['$totalVolume', 2] },
+        averageVolume: { $round: ['$averageVolume', 2] },
+        averageMarketCap: { $round: ['$averageMarketCap', 2] },
+        recordCount: 1
+      }
+    },
+    { $sort: { intervalValue: 1 } },
+    {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ];
+
+  const result = await Coin.aggregate(pipeline);
+  const data = result[0]?.data || [];
+  const totalRecords = result[0]?.totalCount[0]?.count || 0;
+
+  return {
+    summary: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    },
+    appliedFilters: Object.keys(filter).length > 0 ? filter : undefined,
+    interval
+  };
+};
+
 export {
   getAllCoins,
   getCoinById,
@@ -1500,7 +1654,10 @@ export {
   getCoinHistoryByMonth,
   searchCoins,
   getFilteredCoins,
-  getAnalyticsSummary
+  getAnalyticsSummary,
+  getGlobalMarketStats,
+  getPriceDistribution,
+  getChronologicalSummary
 };
 
 
