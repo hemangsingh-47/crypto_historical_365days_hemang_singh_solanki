@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins, getAnalyticsSummary } from '../controllers/coinController.js';
 
 
 const router = express.Router();
@@ -66,6 +66,9 @@ router.get('/sort/rank-asc', getSortedByRankAsc);
 
 // GET /coins/sort/return-desc - Fetch coins sorted by daily return descending
 router.get('/sort/return-desc', getSortedByReturnDesc);
+
+// GET /coins/analytics/summary - Fetch summary analytics (average/highest/lowest price & volume) grouped by coin
+router.get('/analytics/summary', getAnalyticsSummary);
 
 // GET /coins/filter/:filterType - Fetch coins filtered by criteria (high-price, low-price, bullish, bearish, profitable, loss-making)
 router.get('/filter/:filterType', getFilteredCoins);

@@ -1342,6 +1342,131 @@ const getFilteredCoins = async (filterType, queryParams = {}, { page = 1, limit 
   };
 };
 
+/**
+ * Fetch aggregation summary analytics (average/highest/lowest price & volume) grouped by coin.
+ * Supports dynamic match filters, pagination, and sorting on analytical metrics.
+ * @param {Object} queryParams - Query parameters for dynamic match filtering and sorting
+ * @param {Object} options - Pagination parameters
+ * @returns {Object} - Paginated analytical results with metadata
+ */
+const getAnalyticsSummary = async (queryParams = {}, { page = 1, limit = 50 } = {}) => {
+  const skip = (page - 1) * limit;
+  const filter = buildQueryFilter(queryParams);
+
+  // Parse sorting parameters
+  const sortParam = queryParams.sort;
+  const sortObject = {};
+  if (sortParam) {
+    const sortStr = Array.isArray(sortParam) ? sortParam.join(',') : String(sortParam);
+    const sortFields = sortStr.split(',');
+    for (const field of sortFields) {
+      let trimmedField = field.trim();
+      let direction = -1; // Default descending
+      
+      if (trimmedField.startsWith('-')) {
+        direction = -1;
+        trimmedField = trimmedField.slice(1);
+      } else if (trimmedField.startsWith('+')) {
+        direction = 1;
+        trimmedField = trimmedField.slice(1);
+      }
+      
+      if (trimmedField.includes(':')) {
+        const [fieldName, dir] = trimmedField.split(':');
+        trimmedField = fieldName;
+        if (dir?.toLowerCase() === 'asc') direction = 1;
+        else if (dir?.toLowerCase() === 'desc') direction = -1;
+      }
+      
+      const ALLOWED_ANALYTICS_SORTS = [
+        'averagePrice',
+        'highestPrice',
+        'lowestPrice',
+        'averageVolume',
+        'highestVolume',
+        'lowestVolume',
+        'coinId',
+        'recordCount'
+      ];
+      
+      if (ALLOWED_ANALYTICS_SORTS.includes(trimmedField)) {
+        sortObject[trimmedField] = direction;
+      }
+    }
+  }
+
+  // Default sort by average price descending
+  if (Object.keys(sortObject).length === 0) {
+    sortObject.averagePrice = -1;
+  }
+
+  const pipeline = [
+    // 1. Match stage
+    { $match: filter },
+    
+    // 2. Group stage
+    {
+      $group: {
+        _id: '$coin_id',
+        coinId: { $first: '$coin_id' },
+        coinName: { $first: '$coin_name' },
+        symbol: { $first: '$symbol' },
+        averagePrice: { $avg: '$price' },
+        highestPrice: { $max: '$price' },
+        lowestPrice: { $min: '$price' },
+        averageVolume: { $avg: '$volume' },
+        highestVolume: { $max: '$volume' },
+        lowestVolume: { $min: '$volume' },
+        recordCount: { $sum: 1 }
+      }
+    },
+    
+    // 3. Project stage (rounding averages and values)
+    {
+      $project: {
+        _id: 0,
+        coinId: 1,
+        coinName: 1,
+        symbol: 1,
+        recordCount: 1,
+        averagePrice: { $round: ['$averagePrice', 2] },
+        highestPrice: { $round: ['$highestPrice', 2] },
+        lowestPrice: { $round: ['$lowestPrice', 2] },
+        averageVolume: { $round: ['$averageVolume', 2] },
+        highestVolume: { $round: ['$highestVolume', 2] },
+        lowestVolume: { $round: ['$lowestVolume', 2] }
+      }
+    },
+    
+    // 4. Sort stage
+    { $sort: sortObject },
+    
+    // 5. Facet stage for pagination
+    {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }]
+      }
+    }
+  ];
+
+  const result = await Coin.aggregate(pipeline);
+  const data = result[0]?.data || [];
+  const totalRecords = result[0]?.totalCount[0]?.count || 0;
+
+  return {
+    analytics: data,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    },
+    appliedFilters: Object.keys(filter).length > 0 ? filter : undefined,
+    appliedSort: sortObject
+  };
+};
+
 export {
   getAllCoins,
   getCoinById,
@@ -1374,7 +1499,8 @@ export {
   getCurrentPrice,
   getCoinHistoryByMonth,
   searchCoins,
-  getFilteredCoins
+  getFilteredCoins,
+  getAnalyticsSummary
 };
 
 

@@ -199,6 +199,33 @@ async function runTests() {
       name: '27. Filter invalid-filter - GET /coins/filter/invalid-filter',
       path: '/coins/filter/invalid-filter',
       expectedStatus: 400
+    },
+    {
+      name: '28. Analytics summary - GET /coins/analytics/summary',
+      path: '/coins/analytics/summary?limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.analytics && data.analytics.length > 0 && typeof data.analytics[0].averagePrice === 'number';
+      }
+    },
+    {
+      name: '29. Analytics summary filtered - GET /coins/analytics/summary?month=2024-12',
+      path: '/coins/analytics/summary?month=2024-12&limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.analytics && data.analytics.length > 0;
+      }
+    },
+    {
+      name: '30. Analytics summary sorted - GET /coins/analytics/summary?sort=-averageVolume',
+      path: '/coins/analytics/summary?sort=-averageVolume&limit=2',
+      expectedStatus: 200,
+      verify: (data) => {
+        if (data.analytics && data.analytics.length === 2) {
+          return data.analytics[0].averageVolume >= data.analytics[1].averageVolume;
+        }
+        return true;
+      }
     }
   ];
 
