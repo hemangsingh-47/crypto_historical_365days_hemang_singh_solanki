@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import coinRoutes from './routes/coinRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +40,8 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/coins', coinRoutes);
+app.use('/search', searchRoutes);
+
 
 // Fallback 404 handler (route not found)
 app.use((req, res, next) => {

@@ -1218,6 +1218,49 @@ const replaceCoin = async (id, replacementData) => {
   return coin;
 };
 
+/**
+ * Search coin records by regex match on text fields.
+ * Supports q matching coin_id, coin_name, symbol, month, or date.
+ * @param {String} q - Search keyword
+ * @param {Object} options - Pagination (page, limit)
+ * @returns {Object} - Paginated search results
+ */
+const searchCoins = async (q, { page = 1, limit = 50 } = {}) => {
+  const query = q?.trim();
+  if (!query) {
+    throw createServiceError('Search query parameter q is required', 400);
+  }
+
+  const escapedQuery = escapeRegex(query);
+  const skip = (page - 1) * limit;
+
+  const filter = {
+    $or: [
+      { coin_id: { $regex: escapedQuery, $options: 'i' } },
+      { coin_name: { $regex: escapedQuery, $options: 'i' } },
+      { symbol: { $regex: escapedQuery, $options: 'i' } },
+      { month: { $regex: escapedQuery, $options: 'i' } },
+      { date: { $regex: escapedQuery, $options: 'i' } }
+    ]
+  };
+
+  const totalRecords = await Coin.countDocuments(filter);
+  const coins = await Coin.find(filter)
+    .skip(skip)
+    .limit(limit)
+    .sort({ timestamp: -1 });
+
+  return {
+    coins,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalRecords / limit),
+      totalRecords,
+      limit
+    }
+  };
+};
+
 export {
   getAllCoins,
   getCoinById,
@@ -1248,6 +1291,8 @@ export {
   compareTwoCoins,
   compareThreeCoins,
   getCurrentPrice,
-  getCoinHistoryByMonth
+  getCoinHistoryByMonth,
+  searchCoins
 };
+
 

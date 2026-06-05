@@ -112,6 +112,40 @@ async function runTests() {
         }
         return true;
       }
+    },
+    {
+      name: '16. Name match - GET /search/coins?q=bitcoin',
+      path: '/search/coins?q=bitcoin&limit=1',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.coins && data.coins.length > 0 && data.coins[0].coin_name.toLowerCase().includes('bitcoin');
+      }
+    },
+    {
+      name: '17. Symbol match - GET /search/coins?q=btc',
+      path: '/search/coins?q=btc&limit=1',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.coins && data.coins.length > 0 && data.coins[0].symbol.toLowerCase().includes('btc');
+      }
+    },
+    {
+      name: '18. Month match - GET /search/coins?q=2024-12',
+      path: '/search/coins?q=2024-12&limit=1',
+      expectedStatus: 200,
+      verify: (data) => {
+        return data.coins && data.coins.length > 0 && data.coins[0].month === '2024-12';
+      }
+    },
+    {
+      name: '19. Missing param check - GET /search/coins',
+      path: '/search/coins',
+      expectedStatus: 400
+    },
+    {
+      name: '20. Regex injection check - GET /search/coins?q=%2B',
+      path: '/search/coins?q=%2B',
+      expectedStatus: 200
     }
   ];
 
