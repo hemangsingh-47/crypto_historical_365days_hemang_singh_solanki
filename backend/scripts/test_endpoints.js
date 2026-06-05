@@ -505,7 +505,129 @@ async function runTests() {
       console.log('❌ Skipping profile validation test: login token was not retrieved.');
     }
 
-    // (j) Logout (should succeed)
+    // (j) Forgot password with invalid email (should fail)
+    const forgotBadRes = await fetch(`${BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'nonexistent@example.com' })
+    });
+    const forgotBadData = await forgotBadRes.json();
+    if (forgotBadRes.status === 400 && !forgotBadData.success) {
+      console.log('✅ [PASS] POST /auth/forgot-password invalid email rejected (400 Bad Request)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/forgot-password invalid email accepted:', forgotBadRes.status, forgotBadData);
+    }
+
+    // (k) Forgot password with valid email (should succeed and return token)
+    let resetToken = '';
+    const forgotGoodRes = await fetch(`${BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: uniqueEmail })
+    });
+    const forgotGoodData = await forgotGoodRes.json();
+    if (forgotGoodRes.status === 200 && forgotGoodData.success && forgotGoodData.resetToken) {
+      console.log('✅ [PASS] POST /auth/forgot-password valid email generated reset token successfully');
+      resetToken = forgotGoodData.resetToken;
+    } else {
+      console.log('❌ [FAIL] POST /auth/forgot-password valid email failed:', forgotGoodRes.status, forgotGoodData);
+    }
+
+    // (l) Reset password with invalid token (should fail)
+    const resetBadRes = await fetch(`${BASE_URL}/auth/reset-password/invalid_reset_token_123`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: 'newpassword123' })
+    });
+    const resetBadData = await resetBadRes.json();
+    if (resetBadRes.status === 400 && !resetBadData.success) {
+      console.log('✅ [PASS] POST /auth/reset-password invalid token rejected (400 Bad Request)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/reset-password invalid token accepted:', resetBadRes.status, resetBadData);
+    }
+
+    // (m) Reset password with valid token (should succeed)
+    if (resetToken) {
+      const resetGoodRes = await fetch(`${BASE_URL}/auth/reset-password/${resetToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: 'newpassword123' })
+      });
+      const resetGoodData = await resetGoodRes.json();
+      if (resetGoodRes.status === 200 && resetGoodData.success) {
+        console.log('✅ [PASS] POST /auth/reset-password valid token updated password successfully');
+      } else {
+        console.log('❌ [FAIL] POST /auth/reset-password valid token failed:', resetGoodRes.status, resetGoodData);
+      }
+    } else {
+      console.log('❌ Skipping valid reset token test: reset token was not retrieved.');
+    }
+
+    // (n) Verify new password by logging in (should succeed)
+    let newLoginToken = '';
+    const loginNewRes = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: uniqueEmail, password: 'newpassword123' })
+    });
+    const loginNewData = await loginNewRes.json();
+    if (loginNewRes.status === 200 && loginNewData.success && loginNewData.token) {
+      console.log('✅ [PASS] POST /auth/login with newly reset password succeeded');
+      newLoginToken = loginNewData.token;
+    } else {
+      console.log('❌ [FAIL] POST /auth/login with newly reset password failed:', loginNewRes.status, loginNewData);
+    }
+
+    // (o) Change password without auth token (should fail)
+    const changeNoAuthRes = await fetch(`${BASE_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword: 'newpassword123', newPassword: 'anotherpassword123' })
+    });
+    const changeNoAuthData = await changeNoAuthRes.json();
+    if (changeNoAuthRes.status === 401 && !changeNoAuthData.success) {
+      console.log('✅ [PASS] POST /auth/change-password without token rejected (401 Unauthorized)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/change-password without token accepted:', changeNoAuthRes.status, changeNoAuthData);
+    }
+
+    // (p) Change password with incorrect current password (should fail)
+    if (newLoginToken) {
+      const changeBadRes = await fetch(`${BASE_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${newLoginToken}`
+        },
+        body: JSON.stringify({ currentPassword: 'wrong_password_here', newPassword: 'anotherpassword123' })
+      });
+      const changeBadData = await changeBadRes.json();
+      if (changeBadRes.status === 400 && !changeBadData.success) {
+        console.log('✅ [PASS] POST /auth/change-password wrong current password rejected (400 Bad Request)');
+      } else {
+        console.log('❌ [FAIL] POST /auth/change-password wrong current password accepted:', changeBadRes.status, changeBadData);
+      }
+
+      // (q) Change password with correct current password (should succeed)
+      const changeGoodRes = await fetch(`${BASE_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${newLoginToken}`
+        },
+        body: JSON.stringify({ currentPassword: 'newpassword123', newPassword: 'finalpassword123' })
+      });
+      const changeGoodData = await changeGoodRes.json();
+      if (changeGoodRes.status === 200 && changeGoodData.success) {
+        console.log('✅ [PASS] POST /auth/change-password correct credentials updated successfully');
+      } else {
+        console.log('❌ [FAIL] POST /auth/change-password correct credentials failed:', changeGoodRes.status, changeGoodData);
+      }
+    } else {
+      console.log('❌ Skipping change password tests: new login token was not retrieved.');
+    }
+
+    // (r) Logout (should succeed)
     const logoutRes = await fetch(`${BASE_URL}/auth/logout`, {
       method: 'POST'
     });

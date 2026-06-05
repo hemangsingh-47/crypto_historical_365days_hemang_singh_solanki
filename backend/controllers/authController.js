@@ -229,3 +229,120 @@ export const getUserProfile = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Generate password reset token and email simulation log
+ * @route   POST /auth/forgot-password
+ * @access  Public
+ */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Please provide an email address' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'User with this email does not exist' });
+    }
+
+    // Generate raw reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token and set expiry (10 min)
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // Email simulator log output
+    console.log(`\n======================================================================`);
+    console.log(`📬 [EMAIL SIMULATOR] Password reset link for ${user.email}:`);
+    console.log(`👉 http://127.0.0.1:5000/auth/reset-password/${resetToken}`);
+    console.log('======================================================================\n');
+
+    const responsePayload = {
+      success: true,
+      message: 'Password reset email sent successfully'
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+      responsePayload.resetToken = resetToken;
+    }
+
+    res.status(200).json(responsePayload);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Forgot password operation failed', error: error.message });
+  }
+};
+
+/**
+ * @desc    Reset password using reset token
+ * @route   POST /auth/reset-password/:resetToken
+ * @access  Public
+ */
+export const resetPassword = async (req, res) => {
+  try {
+    const { resetToken } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Please provide a new password' });
+    }
+
+    // Hash raw token
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Find user with matching token and unexpired time
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    // Update password and clear reset token fields
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successful! You can now log in with your new password.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Password reset failed', error: error.message });
+  }
+};
+
+/**
+ * @desc    Change logged-in user password
+ * @route   POST /auth/change-password
+ * @access  Private
+ */
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Please provide current and new passwords' });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    // Validate current password
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Incorrect current password' });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Password change failed', error: error.message });
+  }
+};
