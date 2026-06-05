@@ -1,4 +1,6 @@
 import { getAllCoins, getCoinById, createCoin, updateCoin as updateCoinService, replaceCoin as replaceCoinService, deleteCoin as deleteCoinService, checkCoinExists as checkCoinExistsService, bulkCreateCoins, bulkUpdateCoins, bulkDeleteCoins, getCoinsByName, getCoinsBySymbol, getCoinsByRank, getCoinsByMonth, getCoinsByDate, getLatestCoins, getCoinHistory, getTopMarketCapCoins, getTopVolumeCoins, getTopGainersCoins, getTopLosersCoins, getOldestCoins, getNewestCoins, getTrendingCoins, getRecentCoins, getCoinPerformance, compareTwoCoins, compareThreeCoins, getCurrentPrice, getCoinHistoryByMonth, searchCoins as searchCoinsService, getFilteredCoins as getFilteredCoinsService, getAnalyticsSummary as getAnalyticsSummaryService, getGlobalMarketStats as getGlobalMarketStatsService, getPriceDistribution as getPriceDistributionService, getChronologicalSummary as getChronologicalSummaryService } from '../services/coinService.js';
+import mongoose from 'mongoose';
+import Coin from '../models/Coin.js';
 
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -1485,6 +1487,243 @@ const getChronologicalSummary = async (req, res) => {
   }
 };
 
-export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, searchCoins, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary };
+/**
+ * @desc    Get API system health status
+ * @route   GET /coins/system/health
+ * @access  Public
+ */
+const getSystemHealth = async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    res.status(200).json({
+      success: true,
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      dbStatus
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Health check failed',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get API system version details
+ * @route   GET /coins/system/version
+ * @access  Public
+ */
+const getSystemVersion = (req, res) => {
+  res.status(200).json({
+    success: true,
+    version: '1.0.0',
+    description: 'Crypto Market Analytics API'
+  });
+};
+
+/**
+ * @desc    Get API system public configurations
+ * @route   GET /coins/system/config
+ * @access  Public
+ */
+const getSystemConfig = (req, res) => {
+  res.status(200).json({
+    success: true,
+    config: {
+      nodeEnv: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 5000,
+      rateLimitMax: 250,
+      rateLimitWindowMs: 15 * 60 * 1000
+    }
+  });
+};
+
+/**
+ * @desc    Predict future market trends for a coin based on average daily return and volatility
+ * @route   GET /coins/predictions
+ * @access  Public
+ */
+const getPredictions = async (req, res) => {
+  try {
+    const { coinId = 'bitcoin', days = 7 } = req.query;
+    const daysCount = parseInt(days, 10) || 7;
+
+    // Find last 30 days of historical data for this coin
+    const history = await Coin.find({ coin_id: coinId })
+      .sort({ timestamp: -1 })
+      .limit(30);
+
+    if (history.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No historical data found for coin ID: ${coinId}`
+      });
+    }
+
+    // Reverse history to have chronological order
+    const chronoHistory = history.reverse();
+    const currentPrice = chronoHistory[chronoHistory.length - 1].price;
+
+    // Calculate average daily return and standard deviation (volatility)
+    const returns = chronoHistory
+      .map(c => c.daily_return)
+      .filter(r => r !== null && r !== undefined);
+    
+    const avgReturn = returns.length > 0
+      ? returns.reduce((sum, r) => sum + r, 0) / returns.length
+      : 0;
+
+    const variance = returns.length > 1
+      ? returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / (returns.length - 1)
+      : 0;
+    const volatility = Math.sqrt(variance);
+
+    // Generate forecast
+    const forecast = [];
+    let lastPrice = currentPrice;
+    const now = new Date();
+
+    for (let i = 1; i <= daysCount; i++) {
+      const forecastDate = new Date(now);
+      forecastDate.setDate(now.getDate() + i);
+
+      // Simple trend line forecast
+      const drift = avgReturn / 100;
+      const expectedPrice = lastPrice * (1 + drift);
+
+      // Compute confidence intervals based on volatility
+      const ciMultiplier = (volatility / 100) * Math.sqrt(i);
+      const upperBoundary = expectedPrice * (1 + 1.96 * ciMultiplier);
+      const lowerBoundary = expectedPrice * (1 - 1.96 * ciMultiplier);
+
+      forecast.push({
+        day: i,
+        date: forecastDate.toISOString().split('T')[0],
+        predictedPrice: Number(expectedPrice.toFixed(4)),
+        confidenceInterval: {
+          upper: Number(upperBoundary.toFixed(4)),
+          lower: Number(Math.max(0, lowerBoundary).toFixed(4))
+        }
+      });
+
+      lastPrice = expectedPrice;
+    }
+
+    res.status(200).json({
+      success: true,
+      coinId,
+      currentPrice,
+      metrics: {
+        averageDailyReturnPercent: Number(avgReturn.toFixed(4)),
+        dailyVolatilityPercent: Number(volatility.toFixed(4))
+      },
+      forecast
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Prediction failed',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Simulate investment portfolio yields
+ * @route   GET /coins/portfolio/simulate
+ * @access  Public
+ */
+const simulatePortfolio = async (req, res) => {
+  try {
+    const { allocation = 'bitcoin:0.5,ethereum:0.5', investment = '10000', days = '30' } = req.query;
+    const initialCapital = parseFloat(investment) || 10000;
+    const lookbackDays = parseInt(days, 10) || 30;
+
+    // Parse allocation: "bitcoin:0.5,ethereum:0.5" -> { bitcoin: 0.5, ethereum: 0.5 }
+    const assets = allocation.split(',').map(item => {
+      const [coinId, weightStr] = item.split(':');
+      return {
+        coinId: coinId.trim(),
+        weight: parseFloat(weightStr) || 0
+      };
+    });
+
+    // Validate weights sum to approximately 1.0
+    const totalWeight = assets.reduce((sum, a) => sum + a.weight, 0);
+    if (Math.abs(totalWeight - 1.0) > 0.05) {
+      return res.status(400).json({
+        success: false,
+        message: `Allocation weights must sum to 1.0 (got ${totalWeight.toFixed(2)})`
+      });
+    }
+
+    const results = [];
+    let currentPortfolioValue = 0;
+
+    for (const asset of assets) {
+      // Find historical prices for this asset
+      const history = await Coin.find({ coin_id: asset.coinId })
+        .sort({ timestamp: -1 })
+        .limit(lookbackDays);
+
+      if (history.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: `No price history found for asset: ${asset.coinId}`
+        });
+      }
+
+      // Reverse history to have chronological order
+      const chronoHistory = history.reverse();
+      const startPrice = chronoHistory[0].price;
+      const endPrice = chronoHistory[chronoHistory.length - 1].price;
+
+      const allocatedCapital = initialCapital * asset.weight;
+      const unitsBought = allocatedCapital / startPrice;
+      const finalValue = unitsBought * endPrice;
+      const absoluteReturn = finalValue - allocatedCapital;
+      const percentageReturn = (absoluteReturn / allocatedCapital) * 100;
+
+      currentPortfolioValue += finalValue;
+
+      results.push({
+        coinId: asset.coinId,
+        weight: asset.weight,
+        allocatedCapital,
+        unitsBought,
+        startPrice,
+        endPrice,
+        finalValue: Number(finalValue.toFixed(2)),
+        absoluteReturn: Number(absoluteReturn.toFixed(2)),
+        percentageReturn: Number(percentageReturn.toFixed(2))
+      });
+    }
+
+    const totalReturn = currentPortfolioValue - initialCapital;
+    const totalPercentageReturn = (totalReturn / initialCapital) * 100;
+
+    res.status(200).json({
+      success: true,
+      initialCapital,
+      lookbackDays,
+      finalPortfolioValue: Number(currentPortfolioValue.toFixed(2)),
+      totalReturn: Number(totalReturn.toFixed(2)),
+      totalPercentageReturn: Number(totalPercentageReturn.toFixed(2)),
+      breakdown: results
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Portfolio simulation failed',
+      error: error.message
+    });
+  }
+};
+
+export { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, searchCoins, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary, getSystemHealth, getSystemVersion, getSystemConfig, getPredictions, simulatePortfolio };
 
 

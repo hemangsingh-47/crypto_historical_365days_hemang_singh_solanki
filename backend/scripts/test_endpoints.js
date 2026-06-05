@@ -852,6 +852,71 @@ async function runTests() {
       console.log('❌ [ERROR] Custom middleware tests failed:', middlewareErr.message);
     }
 
+    // (u) Error Handling & Input Validation (Phase 26)
+    console.log('\n--- Testing Error Handling & Input Validation (Phase 26) ---');
+    try {
+      // 1. Validation checks: Registration with invalid details
+      const badRegisterRes = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '', email: 'invalid-email', password: 'short' })
+      });
+      const badRegisterData = await badRegisterRes.json();
+      if (badRegisterRes.status === 400 && badRegisterData.success === false && badRegisterData.errors) {
+        console.log('✅ [PASS] Input validation rejected invalid registration payload with 400');
+      } else {
+        console.log('❌ [FAIL] Input validation failed to reject bad registration:', badRegisterRes.status, badRegisterData);
+      }
+
+      // 2. Health check route
+      const healthRes = await fetch(`${BASE_URL}/coins/system/health`);
+      const healthData = await healthRes.json();
+      if (healthRes.status === 200 && healthData.success && healthData.status === 'healthy' && healthData.dbStatus === 'connected') {
+        console.log('✅ [PASS] GET /coins/system/health is healthy and connected to DB');
+      } else {
+        console.log('❌ [FAIL] GET /coins/system/health check failed:', healthRes.status, healthData);
+      }
+
+      // 3. Version check route
+      const versionRes = await fetch(`${BASE_URL}/coins/system/version`);
+      const versionData = await versionRes.json();
+      if (versionRes.status === 200 && versionData.success && versionData.version === '1.0.0') {
+        console.log('✅ [PASS] GET /coins/system/version retrieved version successfully');
+      } else {
+        console.log('❌ [FAIL] GET /coins/system/version check failed:', versionRes.status, versionData);
+      }
+
+      // 4. Config check route
+      const configRes = await fetch(`${BASE_URL}/coins/system/config`);
+      const configData = await configRes.json();
+      if (configRes.status === 200 && configData.success && configData.config && configData.config.nodeEnv) {
+        console.log('✅ [PASS] GET /coins/system/config retrieved configuration successfully');
+      } else {
+        console.log('❌ [FAIL] GET /coins/system/config check failed:', configRes.status, configData);
+      }
+
+      // 5. Predictions check route
+      const predRes = await fetch(`${BASE_URL}/coins/predictions?coinId=bitcoin&days=5`);
+      const predData = await predRes.json();
+      if (predRes.status === 200 && predData.success && predData.forecast && predData.forecast.length === 5) {
+        console.log('✅ [PASS] GET /coins/predictions forecasted future prices successfully');
+      } else {
+        console.log('❌ [FAIL] GET /coins/predictions failed:', predRes.status, predData);
+      }
+
+      // 6. Portfolio simulation route
+      const simRes = await fetch(`${BASE_URL}/coins/portfolio/simulate?allocation=bitcoin:0.7,ethereum:0.3&investment=5000&days=15`);
+      const simData = await simRes.json();
+      if (simRes.status === 200 && simData.success && simData.finalPortfolioValue && simData.breakdown && simData.breakdown.length === 2) {
+        console.log('✅ [PASS] GET /coins/portfolio/simulate performed investment backtest successfully');
+      } else {
+        console.log('❌ [FAIL] GET /coins/portfolio/simulate failed:', simRes.status, simData);
+      }
+
+    } catch (phase26Err) {
+      console.log('❌ [ERROR] Phase 26 tests failed:', phase26Err.message);
+    }
+
   } catch (err) {
     console.log('❌ [ERROR] Auth tests threw error:', err.message);
   }

@@ -31,7 +31,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 23: Password Management (POST /auth/forgot-password, reset-password, change-password)**
 - [x] **Phase 24: JWT Security & Token Refreshing (JWT verification middleware, protected routes, refresh/revoke tokens)**
 - [x] **Phase 25: Custom Middlewares & Security Enhancements (Logger, custom Rate Limiter, CORS settings)**
-- [ ] **Phase 26: Error Handling & Input Validation (Global error middleware, request validation schemas, health checks, advanced prediction/simulations)**
+- [x] **Phase 26: Error Handling & Input Validation (Global error middleware, request validation schemas, health checks, advanced prediction/simulations)**
 - [ ] **Phase 27: HTTP HEAD & OPTIONS Methods & Postman Export**
 
 ---

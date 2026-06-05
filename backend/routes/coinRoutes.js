@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary } from '../controllers/coinController.js';
+import { getCoins, getCoin, addCoin, updateCoin, replaceCoin, removeCoin, checkCoinExists, bulkAddCoins, bulkModifyCoins, bulkRemoveCoins, getByName, getBySymbol, getByRank, getByMonth, getByDate, getLatest, getHistory, getTopMarketCap, getTopVolume, getTopGainers, getTopLosers, getOldest, getNewest, getTrending, getRecent, getPerformance, compareTwo, compareThree, getPrice, getHistoryByMonth, getSortedByPriceAsc, getSortedByPriceDesc, getSortedByVolumeDesc, getSortedByRankAsc, getSortedByReturnDesc, getFilteredCoins, getAnalyticsSummary, getGlobalStats, getPriceDistribution, getChronologicalSummary, getSystemHealth, getSystemVersion, getSystemConfig, getPredictions, simulatePortfolio } from '../controllers/coinController.js';
 
 
 const router = express.Router();
@@ -78,6 +78,21 @@ router.get('/analytics/price-distribution', getPriceDistribution);
 
 // GET /coins/analytics/chronological-summary - Fetch chronological analytics (grouped daily/monthly/yearly)
 router.get('/analytics/chronological-summary', getChronologicalSummary);
+
+// GET /coins/predictions - Predict future market trends
+router.get('/predictions', getPredictions);
+
+// GET /coins/portfolio/simulate - Simulate portfolio investments
+router.get('/portfolio/simulate', simulatePortfolio);
+
+// GET /coins/system/health - Get system health
+router.get('/system/health', getSystemHealth);
+
+// GET /coins/system/version - Get system version
+router.get('/system/version', getSystemVersion);
+
+// GET /coins/system/config - Get system configuration
+router.get('/system/config', getSystemConfig);
 
 // GET /coins/filter/:filterType - Fetch coins filtered by criteria (high-price, low-price, bullish, bearish, profitable, loss-making)
 router.get('/filter/:filterType', getFilteredCoins);

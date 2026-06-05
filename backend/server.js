@@ -7,6 +7,7 @@ import searchRoutes from './routes/searchRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { logger } from './middlewares/loggerMiddleware.js';
 import { rateLimiter } from './middlewares/rateLimitMiddleware.js';
+import { errorHandler } from './middlewares/errorMiddleware.js';
 
 // Load environment variables
 dotenv.config();
@@ -64,18 +65,7 @@ app.use((req, res, next) => {
 });
 
 // Centralized Global Error Handler Middleware
-app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err);
-  
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-  
-  res.status(statusCode).json({
-    success: false,
-    message: message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  });
-});
+app.use(errorHandler);
 
 // Start the Express server
 app.listen(PORT, () => {
