@@ -804,6 +804,54 @@ async function runTests() {
       console.log('❌ Skipping Phase 24 tests: login did not return correct token fields');
     }
 
+    // (t) Custom Middlewares & Security Enhancements (Phase 25)
+    console.log('\n--- Testing Custom Middlewares & Security Enhancements (Phase 25) ---');
+    try {
+      // 1. Check Rate Limiter Headers on a simple endpoint
+      const rateLimitRes = await fetch(`${BASE_URL}/`);
+      const limitHeader = rateLimitRes.headers.get('x-ratelimit-limit');
+      const remainingHeader = rateLimitRes.headers.get('x-ratelimit-remaining');
+      const resetHeader = rateLimitRes.headers.get('x-ratelimit-reset');
+
+      if (limitHeader && remainingHeader && resetHeader) {
+        console.log(`✅ [PASS] Rate Limit headers present (Limit: ${limitHeader}, Remaining: ${remainingHeader}, Reset: ${resetHeader})`);
+      } else {
+        console.log('❌ [FAIL] Rate Limit headers missing');
+      }
+
+      // 2. Check Rate Limiter quota decrement
+      const res1 = await fetch(`${BASE_URL}/`);
+      const rem1 = parseInt(res1.headers.get('x-ratelimit-remaining'), 10);
+      const res2 = await fetch(`${BASE_URL}/`);
+      const rem2 = parseInt(res2.headers.get('x-ratelimit-remaining'), 10);
+      if (!isNaN(rem1) && !isNaN(rem2) && rem1 - rem2 === 1) {
+        console.log('✅ [PASS] Rate Limiter decrements remaining quota correctly');
+      } else {
+        console.log(`❌ [FAIL] Rate Limiter quota decrement failed (Remaining 1: ${rem1}, Remaining 2: ${rem2})`);
+      }
+
+      // 3. Check CORS Options Preflight response
+      const corsRes = await fetch(`${BASE_URL}/coins`, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': 'http://localhost:3000',
+          'Access-Control-Request-Method': 'GET',
+          'Access-Control-Request-Headers': 'Content-Type,Authorization'
+        }
+      });
+      const corsOrigin = corsRes.headers.get('access-control-allow-origin');
+      const corsCredentials = corsRes.headers.get('access-control-allow-credentials');
+
+      if (corsOrigin === 'http://localhost:3000' && corsCredentials === 'true') {
+        console.log('✅ [PASS] Secure CORS configurations verified successfully');
+      } else {
+        console.log('❌ [FAIL] Secure CORS configuration check failed:', { corsOrigin, corsCredentials });
+      }
+
+    } catch (middlewareErr) {
+      console.log('❌ [ERROR] Custom middleware tests failed:', middlewareErr.message);
+    }
+
   } catch (err) {
     console.log('❌ [ERROR] Auth tests threw error:', err.message);
   }

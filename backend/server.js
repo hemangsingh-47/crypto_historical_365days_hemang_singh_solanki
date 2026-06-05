@@ -5,7 +5,8 @@ import connectDB from './config/db.js';
 import coinRoutes from './routes/coinRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-
+import { logger } from './middlewares/loggerMiddleware.js';
+import { rateLimiter } from './middlewares/rateLimitMiddleware.js';
 
 // Load environment variables
 dotenv.config();
@@ -16,18 +17,27 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable Cross-Origin Resource Sharing (CORS)
-app.use(cors());
+// Configure Cross-Origin Resource Sharing (CORS)
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Register Custom IP-based Rate Limiter (Limit each IP to 250 requests per 15 minutes by default)
+app.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 250 }));
 
 // Body parser middleware (supports json and urlencoded)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Standard logger middleware for incoming requests
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.url}`);
-  next();
-});
+// Register Custom Request Logger
+app.use(logger);
 
 // Health check / Welcome endpoint
 app.get('/', (req, res) => {
