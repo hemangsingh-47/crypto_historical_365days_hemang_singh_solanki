@@ -359,6 +359,79 @@ async function runTests() {
   } catch (err) {
     console.log('❌ [ERROR] PUT/PATCH tests threw error:', err.message);
   }
+
+  // 12. Test Auth Registration and Verification
+  console.log('\n--- Testing Authentication System (Register & Verify Email) ---');
+  try {
+    const uniqueEmail = `testuser_${Date.now()}@example.com`;
+    
+    // (a) Register a new user
+    const registerBody = {
+      name: 'Test User',
+      email: uniqueEmail,
+      password: 'password123'
+    };
+    const regRes = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(registerBody)
+    });
+    const regData = await regRes.json();
+    
+    let token = '';
+    if (regRes.status === 201 && regData.success) {
+      console.log('✅ [PASS] POST /auth/register succeeded');
+      token = regData.data.verificationToken;
+    } else {
+      console.log('❌ [FAIL] POST /auth/register failed:', regRes.status, regData);
+    }
+
+    // (b) Register duplicate user (should fail)
+    const dupRes = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(registerBody)
+    });
+    const dupData = await dupRes.json();
+    if (dupRes.status === 400 && !dupData.success) {
+      console.log('✅ [PASS] POST /auth/register duplicate email rejected (400 Bad Request)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/register duplicate email accepted:', dupRes.status, dupData);
+    }
+
+    // (c) Verify email with invalid token (should fail)
+    const verifyInvalidRes = await fetch(`${BASE_URL}/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'invalid_token_123' })
+    });
+    const verifyInvalidData = await verifyInvalidRes.json();
+    if (verifyInvalidRes.status === 400 && !verifyInvalidData.success) {
+      console.log('✅ [PASS] POST /auth/verify-email invalid token rejected (400 Bad Request)');
+    } else {
+      console.log('❌ [FAIL] POST /auth/verify-email invalid token accepted:', verifyInvalidRes.status, verifyInvalidData);
+    }
+
+    // (d) Verify email with valid token (should succeed)
+    if (token) {
+      const verifyValidRes = await fetch(`${BASE_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const verifyValidData = await verifyValidRes.json();
+      if (verifyValidRes.status === 200 && verifyValidData.success) {
+        console.log('✅ [PASS] POST /auth/verify-email valid token verified successfully');
+      } else {
+        console.log('❌ [FAIL] POST /auth/verify-email valid token verification failed:', verifyValidRes.status, verifyValidData);
+      }
+    } else {
+      console.log('❌ Skipping valid token verification test: registration token was not retrieved.');
+    }
+
+  } catch (err) {
+    console.log('❌ [ERROR] Auth tests threw error:', err.message);
+  }
 }
 
 runTests();

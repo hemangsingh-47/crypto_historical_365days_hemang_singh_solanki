@@ -26,7 +26,7 @@ This checklist tracks the implementation of the backend codebase, divided into *
 - [x] **Phase 18: Custom Filtering Endpoints (/coins/filter/high-price, low-price, bullish, bearish, profitable, loss-making, etc.)**
 - [x] **Phase 19: Aggregation Analytics (Match, group, project, sort pipelines for highest/lowest/average price & volume)**
 - [x] **Phase 20: Aggregation Statistics (Market capitalization, distribution graphs calculations, daily/monthly/yearly summary)**
-- [ ] **Phase 21: Auth System - User Registration & Email Verification (POST /auth/register, POST /auth/verify-email, User model)**
+- [x] **Phase 21: Auth System - User Registration & Email Verification (POST /auth/register, POST /auth/verify-email, User model)**
 - [ ] **Phase 22: Auth System - User Login, Logout & Profile Management (POST /auth/login, POST /auth/logout, profile routes)**
 - [ ] **Phase 23: Password Management (POST /auth/forgot-password, reset-password, change-password)**
 - [ ] **Phase 24: JWT Security & Token Refreshing (JWT verification middleware, protected routes, refresh/revoke tokens)**
