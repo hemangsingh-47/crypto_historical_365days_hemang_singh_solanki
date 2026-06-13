@@ -1,0 +1,95 @@
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-subhead);
+}
+
+.dashboard-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.dashboard-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.dashboard-table-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: var(--text-subhead);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.coin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.coin-table th {
+  text-align: left;
+  padding: 12px 8px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: var(--text-small);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.coin-table td {
+  padding: 16px 8px;
+  border-bottom: 1px solid var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font-size: var(--text-small);
+}
+
+.coin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.coin-table tbody tr:hover {
+  background-color: var(--color-background);
+}
+
+.coin-name-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.coin-symbol {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.trend-up {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.trend-down {
+  color: var(--color-error);
+  font-weight: 600;
+}
