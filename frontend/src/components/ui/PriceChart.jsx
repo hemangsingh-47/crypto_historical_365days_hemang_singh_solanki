@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const PriceChart = ({ data }) => {
   // We use the design tokens directly for colors
@@ -29,8 +29,14 @@ const PriceChart = ({ data }) => {
   return (
     <div style={{ width: '100%', height: 400 }}>
       <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={primaryColor} stopOpacity={0.3}/>
+              <stop offset="95%" stopColor={primaryColor} stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} strokeOpacity={0.5} />
           <XAxis 
             dataKey="date" 
             tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }} 
@@ -47,16 +53,17 @@ const PriceChart = ({ data }) => {
             tickMargin={12}
             tickFormatter={(value) => `$${value}`}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Line 
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255, 90, 31, 0.4)', strokeWidth: 2, strokeDasharray: '5 5' }} />
+          <Area 
             type="monotone" 
             dataKey="price" 
             stroke={primaryColor} 
-            strokeWidth={3} 
-            dot={false}
-            activeDot={{ r: 6, fill: primaryColor, stroke: '#fff', strokeWidth: 2 }}
+            strokeWidth={3}
+            fillOpacity={1}
+            fill="url(#colorPrice)"
+            activeDot={{ r: 8, fill: primaryColor, stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0px 4px 10px rgba(255, 90, 31, 0.5))' } }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

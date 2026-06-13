@@ -1,81 +1,105 @@
 .compare-form-card {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .compare-inputs {
   display: flex;
   align-items: center;
   gap: 24px;
-  flex-wrap: wrap;
-}
-
-.compare-inputs > div {
-  flex: 1;
-  min-width: 200px;
 }
 
 .compare-vs {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.2rem;
   color: var(--color-text-secondary);
-  font-size: var(--text-subhead);
-  padding-top: 16px;
-  flex: 0 0 auto !important;
+  background: rgba(0, 0, 0, 0.05);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 8px;
 }
 
 .compare-error {
   color: var(--color-error);
-  font-size: var(--text-small);
   margin-top: 16px;
+  font-weight: 500;
 }
 
 .compare-results {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  display: flex;
+  gap: 32px;
+  position: relative;
+}
+
+.compare-vs-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .compare-result-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  height: 100%;
+}
+
+.compare-card-header {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .compare-coin-title {
+  font-size: 1.8rem;
   margin: 0;
-  font-size: var(--text-subhead);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
 }
 
 .compare-symbol {
-  font-size: var(--text-small);
   color: var(--color-text-secondary);
-  font-weight: 400;
-  text-transform: uppercase;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .compare-price {
-  margin: 0;
-  font-size: var(--text-headline);
-  font-family: var(--font-body);
+  font-size: 3rem;
+  margin-bottom: 32px;
+  color: var(--color-text-primary);
 }
 
 .compare-metrics-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
+  gap: 16px;
 }
 
 .compare-metric-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: var(--text-body);
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: background 0.2s;
+}
+
+.compare-metric-row:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .compare-metric-row span {
@@ -83,5 +107,29 @@
 }
 
 .compare-metric-row strong {
-  color: var(--color-text-primary);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .compare-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .compare-vs {
+    align-self: center;
+    margin: 8px 0;
+  }
+  
+  .compare-results {
+    flex-direction: column;
+  }
+  
+  .compare-vs-badge {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 16px auto;
+  }
 }

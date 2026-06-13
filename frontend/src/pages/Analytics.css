@@ -1,26 +1,76 @@
-.analytics-loading {
+.analytics-content {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  color: var(--color-text-secondary);
-  font-size: var(--text-subhead);
+  flex-direction: column;
+  gap: 32px;
 }
 
 .analytics-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
   gap: 24px;
-  margin-bottom: 32px;
 }
 
-.analytics-table-card h3 {
-  margin: 0;
-  font-size: var(--text-subhead);
+@media (max-width: 768px) {
+  .analytics-overview {
+    flex-direction: column;
+  }
 }
 
-.analytics-subtitle {
+.analytics-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-family: var(--font-display);
   color: var(--color-text-secondary);
-  font-size: var(--text-small);
-  margin: 4px 0 0 0;
+  font-size: 1.1rem;
+}
+
+.analytics-chart-card {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.analytics-chart-container {
+  padding: 24px 32px 16px 16px;
+}
+
+.empty-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.analytics-table-card {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Recharts Custom Tooltip Styles */
+.recharts-custom-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-modal);
+}
+
+.tooltip-label {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tooltip-value {
+  margin: 0;
+  font-family: var(--font-code);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
 }

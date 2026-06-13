@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, TrendingDown, Swords } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -57,37 +59,61 @@ const Compare = () => {
         {error && <p className="compare-error">{error}</p>}
       </Card>
 
-      {comparisonData && (
-        <div className="compare-results">
-          {comparisonData.map((item) => (
-            <Card key={item.coinId} className="compare-result-card" colorStripe={item.coinId === coin1.toLowerCase() ? 'var(--color-primary)' : 'var(--color-accent)'}>
-              <h2 className="compare-coin-title">{item.latestRecord.coin_name} <span className="compare-symbol">({item.latestRecord.symbol})</span></h2>
-              <h1 className="compare-price">${item.latestRecord.price?.toFixed(4)}</h1>
-              
-              <div className="compare-metrics-list">
-                <div className="compare-metric-row">
-                  <span>Market Cap Rank</span>
-                  <strong>#{item.latestRecord.market_cap_rank}</strong>
-                </div>
-                <div className="compare-metric-row">
-                  <span>Market Cap</span>
-                  <strong>${item.latestRecord.market_cap?.toLocaleString()}</strong>
-                </div>
-                <div className="compare-metric-row">
-                  <span>24h Volume</span>
-                  <strong>${item.latestRecord.volume?.toLocaleString()}</strong>
-                </div>
-                <div className="compare-metric-row">
-                  <span>24h Return</span>
-                  <strong className={item.performance.dailyReturn >= 0 ? 'trend-up' : 'trend-down'}>
-                    {item.performance.dailyReturn >= 0 ? '+' : ''}{item.performance.dailyReturn?.toFixed(2)}%
-                  </strong>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {comparisonData && (
+          <motion.div 
+            className="compare-results"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          >
+            <div className="compare-vs-badge">
+              <Swords size={32} color="var(--color-primary)" />
+            </div>
+            {comparisonData.map((item, index) => (
+              <motion.div 
+                key={item.coinId}
+                initial={{ opacity: 0, x: index === 0 ? -40 : 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + (index * 0.1), type: "spring", stiffness: 200 }}
+                style={{ flex: 1 }}
+              >
+                <Card className="compare-result-card" colorStripe={index === 0 ? 'var(--color-primary)' : 'var(--color-accent)'}>
+                  <div className="compare-card-header">
+                    <h2 className="compare-coin-title">{item.latestRecord.coin_name} <span className="compare-symbol">({item.latestRecord.symbol})</span></h2>
+                  </div>
+                  <h1 className="compare-price font-mono">${item.latestRecord.price?.toFixed(4)}</h1>
+                  
+                  <div className="compare-metrics-list">
+                    <div className="compare-metric-row">
+                      <span>Market Rank</span>
+                      <strong className="font-mono">#{item.latestRecord.market_cap_rank}</strong>
+                    </div>
+                    <div className="compare-metric-row">
+                      <span>Market Cap</span>
+                      <strong className="font-mono">${item.latestRecord.market_cap?.toLocaleString()}</strong>
+                    </div>
+                    <div className="compare-metric-row">
+                      <span>24h Volume</span>
+                      <strong className="font-mono">${item.latestRecord.volume?.toLocaleString()}</strong>
+                    </div>
+                    <div className="compare-metric-row">
+                      <span>24h Return</span>
+                      <strong className={`font-mono ${item.performance.dailyReturn >= 0 ? 'trend-up' : 'trend-down'}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {item.performance.dailyReturn >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}
+                          {item.performance.dailyReturn >= 0 ? '+' : ''}{item.performance.dailyReturn?.toFixed(2)}%
+                        </div>
+                      </strong>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageContainer>
   );
 };
