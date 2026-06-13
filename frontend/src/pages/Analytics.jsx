@@ -36,7 +36,7 @@ const Analytics = () => {
 
   // The chronological summary returns daily, monthly, yearly stats.
   // We will display the monthly aggregates if available.
-  const monthlyData = analytics?.monthly || [];
+  const monthlyData = analytics?.summary || [];
 
   return (
     <PageContainer title="Analytics Insights">

@@ -30,7 +30,7 @@ const CoinDetails = () => {
         setCoin(coinRes.data);
         
         // Prepare chart data. The API returns full history, we reverse it so chronological order is left-to-right
-        const chartData = (historyRes.data || [])
+        const chartData = (historyRes.coins || [])
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map(item => ({
             date: item.date,

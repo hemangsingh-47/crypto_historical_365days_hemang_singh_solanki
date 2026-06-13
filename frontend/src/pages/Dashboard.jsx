@@ -22,9 +22,9 @@ const Dashboard = () => {
           coinService.getTopLosers({ limit: 5 })
         ]);
         
-        setGlobalData(globalRes.data);
-        setGainers(gainersRes.data);
-        setLosers(losersRes.data);
+        setGlobalData(globalRes);
+        setGainers(gainersRes.coins || []);
+        setLosers(losersRes.coins || []);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
@@ -49,19 +49,19 @@ const Dashboard = () => {
       <div className="dashboard-metrics-grid">
         <MetricCard 
           title="Global Market Cap" 
-          value={`$${globalData?.[0]?.totalMarketCap?.toLocaleString() || 'N/A'}`} 
+          value={`$${globalData?.totalMarketCap?.toLocaleString() || 'N/A'}`} 
           subtitle="Total market capitalization"
           icon="🌎"
         />
         <MetricCard 
           title="24h Trading Volume" 
-          value={`$${globalData?.[0]?.totalVolume?.toLocaleString() || 'N/A'}`} 
+          value={`$${globalData?.totalVolume?.toLocaleString() || 'N/A'}`} 
           subtitle="Total volume across tracked coins"
           icon="📈"
         />
         <MetricCard 
           title="Tracked Coins" 
-          value={globalData?.[0]?.uniqueCoinsCount || 'N/A'} 
+          value={globalData?.uniqueCoinsCount || 'N/A'} 
           subtitle="Total unique assets in database"
           icon="🪙"
         />

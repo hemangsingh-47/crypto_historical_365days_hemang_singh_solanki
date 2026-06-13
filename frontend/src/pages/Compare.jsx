@@ -59,28 +59,28 @@ const Compare = () => {
 
       {comparisonData && (
         <div className="compare-results">
-          {Object.entries(comparisonData).map(([coinId, data]) => (
-            <Card key={coinId} className="compare-result-card" colorStripe={coinId === coin1.toLowerCase() ? 'var(--color-primary)' : 'var(--color-accent)'}>
-              <h2 className="compare-coin-title">{data.coin_name} <span className="compare-symbol">({data.symbol})</span></h2>
-              <h1 className="compare-price">${data.price?.toFixed(4)}</h1>
+          {comparisonData.map((item) => (
+            <Card key={item.coinId} className="compare-result-card" colorStripe={item.coinId === coin1.toLowerCase() ? 'var(--color-primary)' : 'var(--color-accent)'}>
+              <h2 className="compare-coin-title">{item.latestRecord.coin_name} <span className="compare-symbol">({item.latestRecord.symbol})</span></h2>
+              <h1 className="compare-price">${item.latestRecord.price?.toFixed(4)}</h1>
               
               <div className="compare-metrics-list">
                 <div className="compare-metric-row">
                   <span>Market Cap Rank</span>
-                  <strong>#{data.market_cap_rank}</strong>
+                  <strong>#{item.latestRecord.market_cap_rank}</strong>
                 </div>
                 <div className="compare-metric-row">
                   <span>Market Cap</span>
-                  <strong>${data.market_cap?.toLocaleString()}</strong>
+                  <strong>${item.latestRecord.market_cap?.toLocaleString()}</strong>
                 </div>
                 <div className="compare-metric-row">
                   <span>24h Volume</span>
-                  <strong>${data.volume?.toLocaleString()}</strong>
+                  <strong>${item.latestRecord.volume?.toLocaleString()}</strong>
                 </div>
                 <div className="compare-metric-row">
                   <span>24h Return</span>
-                  <strong className={data.daily_return >= 0 ? 'trend-up' : 'trend-down'}>
-                    {data.daily_return >= 0 ? '+' : ''}{data.daily_return?.toFixed(2)}%
+                  <strong className={item.performance.dailyReturn >= 0 ? 'trend-up' : 'trend-down'}>
+                    {item.performance.dailyReturn >= 0 ? '+' : ''}{item.performance.dailyReturn?.toFixed(2)}%
                   </strong>
                 </div>
               </div>

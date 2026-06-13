@@ -33,10 +33,10 @@ const Explore = () => {
         setIsSearching(false);
       }
       
-      setCoins(response.data || []);
+      setCoins(response.coins || []);
       
       // Calculate total pages if the API returns totalCount or pagination metadata
-      const total = response.pagination?.total || response.total || 100; // Fallback if API doesn't return total
+      const total = response.pagination?.totalRecords || response.total || 100; // Fallback if API doesn't return total
       setTotalPages(Math.ceil(total / limit));
     } catch (error) {
       console.error('Failed to fetch coins:', error);
