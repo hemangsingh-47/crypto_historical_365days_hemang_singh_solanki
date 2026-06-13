@@ -5,9 +5,9 @@ import Card from './components/ui/Card';
 
 // Pages
 import Dashboard from './pages/Dashboard';
+import Explore from './pages/Explore';
 
 // Placeholder Pages for now
-const Explore = () => <PageContainer title="Explore Market"><Card>Explore Content</Card></PageContainer>;
 const Compare = () => <PageContainer title="Compare Coins"><Card>Compare Content</Card></PageContainer>;
 const Analytics = () => <PageContainer title="Analytics"><Card>Analytics Content</Card></PageContainer>;
 
