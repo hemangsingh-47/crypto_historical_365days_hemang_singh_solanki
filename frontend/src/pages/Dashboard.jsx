@@ -22,7 +22,7 @@ const Dashboard = () => {
           coinService.getTopLosers({ limit: 5 })
         ]);
         
-        setGlobalData(globalRes);
+        setGlobalData(globalRes.data);
         setGainers(gainersRes.coins || []);
         setLosers(losersRes.coins || []);
       } catch (error) {

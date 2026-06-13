@@ -15,7 +15,7 @@ const Analytics = () => {
         setLoading(true);
         // Using the base api instance directly for this endpoint
         const response = await api.get('/coins/analytics/chronological-summary');
-        setAnalytics(response.data);
+        setAnalytics(response);
       } catch (error) {
         console.error('Failed to load analytics:', error);
       } finally {

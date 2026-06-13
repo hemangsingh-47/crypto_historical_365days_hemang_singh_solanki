@@ -1,14 +1,14 @@
 import React from 'react';
-import Sidebar from './Sidebar';
+import TopNavbar from './TopNavbar';
 import Header from './Header';
 import './PageContainer.css';
 
-const PageContainer = ({ children, title }) => {
+const PageContainer = ({ children, title, showHeader = true }) => {
   return (
     <div className="page-wrapper">
-      <Sidebar />
+      <TopNavbar />
       <div className="main-wrapper">
-        <Header title={title} />
+        {showHeader && <Header title={title} />}
         <main className="main-content">
           <div className="content-inner">
             {children}

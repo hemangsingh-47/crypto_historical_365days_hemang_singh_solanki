@@ -1,12 +1,12 @@
 .page-wrapper {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--color-background);
 }
 
 .main-wrapper {
   flex: 1;
-  margin-left: 256px; /* Offset for sidebar */
   display: flex;
   flex-direction: column;
 }
@@ -18,16 +18,13 @@
 }
 
 .content-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-/* Responsive adjustments can go here */
+/* Responsive adjustments */
 @media (max-width: 1024px) {
-  .main-wrapper {
-    margin-left: 0;
-  }
-  .sidebar {
-    display: none; /* In a real app we'd add a toggle */
+  .main-content {
+    padding: 16px;
   }
 }

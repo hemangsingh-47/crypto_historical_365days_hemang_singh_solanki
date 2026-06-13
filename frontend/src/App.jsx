@@ -4,6 +4,9 @@ import PageContainer from './components/layout/PageContainer';
 import Card from './components/ui/Card';
 
 // Pages
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
 import CoinDetails from './pages/CoinDetails';
@@ -14,7 +17,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/coin/:id" element={<CoinDetails />} />
         <Route path="/compare" element={<Compare />} />
