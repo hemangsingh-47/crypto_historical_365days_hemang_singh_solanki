@@ -7,10 +7,8 @@ import Card from './components/ui/Card';
 import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
 import CoinDetails from './pages/CoinDetails';
-
-// Placeholder Pages for now
-const Compare = () => <PageContainer title="Compare Coins"><Card>Compare Content</Card></PageContainer>;
-const Analytics = () => <PageContainer title="Analytics"><Card>Analytics Content</Card></PageContainer>;
+import Compare from './pages/Compare';
+import Analytics from './pages/Analytics';
 
 function App() {
   return (

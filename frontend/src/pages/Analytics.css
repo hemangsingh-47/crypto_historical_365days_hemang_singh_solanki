@@ -1,0 +1,26 @@
+.analytics-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-subhead);
+}
+
+.analytics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.analytics-table-card h3 {
+  margin: 0;
+  font-size: var(--text-subhead);
+}
+
+.analytics-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  margin: 4px 0 0 0;
+}
