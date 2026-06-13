@@ -1,14 +1,14 @@
 .top-navbar {
   width: 100%;
-  height: 70px;
-  background-color: rgba(245, 245, 244, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  height: 80px;
+  background-color: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .navbar-container {
@@ -22,36 +22,57 @@
 }
 
 .navbar-logo {
-  font-family: var(--font-family-display);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
   text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.navbar-logo span {
+  color: var(--color-primary);
 }
 
 .navbar-links {
   display: flex;
-  gap: 24px;
+  gap: 8px;
 }
 
 .nav-link {
+  position: relative;
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-md);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-  color: var(--color-primary);
-  background-color: rgba(222, 60, 22, 0.05);
+  color: var(--color-text-primary);
+  text-shadow: none;
 }
 
 .nav-link.active {
   color: var(--color-primary);
-  background-color: rgba(222, 60, 22, 0.1);
+}
+
+/* The animated pill background behind the active link is handled by Framer Motion in the JSX */
+.nav-link-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 90, 31, 0.1);
+  border-radius: var(--radius-full);
+  z-index: -1;
+  border: 1px solid rgba(255, 90, 31, 0.2);
 }
 
 .navbar-auth {
@@ -63,24 +84,29 @@
 .nav-login-btn {
   color: var(--color-text-primary);
   text-decoration: none;
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
+  font-size: 0.95rem;
   transition: color 0.2s;
 }
 
 .nav-login-btn:hover {
   color: var(--color-primary);
+  text-shadow: 0 0 8px rgba(255, 90, 31, 0.4);
 }
 
 .nav-signup-btn {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), #FF7B47);
+  color: #fff;
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-semibold);
-  transition: background-color 0.2s;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(255, 90, 31, 0.3);
+  transition: all 0.3s ease;
 }
 
 .nav-signup-btn:hover {
-  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 90, 31, 0.4);
 }
