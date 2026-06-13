@@ -1,0 +1,70 @@
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-title {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-icon {
+  font-size: var(--text-subhead);
+  opacity: 0.8;
+}
+
+.metric-body {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.metric-value {
+  margin: 0;
+  font-size: var(--text-section);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  font-family: var(--font-body); /* Override display font for numbers */
+}
+
+.metric-trend {
+  font-size: var(--text-small);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trend-up {
+  color: var(--color-success);
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.trend-down {
+  color: var(--color-error);
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.trend-neutral {
+  color: var(--color-neutral);
+  background-color: var(--color-surface-raised);
+}
+
+.metric-subtitle {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
