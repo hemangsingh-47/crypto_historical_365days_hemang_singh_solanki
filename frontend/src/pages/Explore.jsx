@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -7,6 +8,7 @@ import { coinService } from '../services/coinService';
 import './Explore.css';
 
 const Explore = () => {
+  const navigate = useNavigate();
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -108,7 +110,11 @@ const Explore = () => {
                 </tr>
               ) : (
                 coins.map((coin) => (
-                  <tr key={coin._id} className="explorer-row">
+                  <tr 
+                    key={coin._id} 
+                    className="explorer-row"
+                    onClick={() => navigate(`/coin/${coin.coin_id}`)}
+                  >
                     <td>
                       <span className="rank-badge">{coin.market_cap_rank || '-'}</span>
                     </td>

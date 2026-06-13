@@ -6,6 +6,7 @@ import Card from './components/ui/Card';
 // Pages
 import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
+import CoinDetails from './pages/CoinDetails';
 
 // Placeholder Pages for now
 const Compare = () => <PageContainer title="Compare Coins"><Card>Compare Content</Card></PageContainer>;
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/coin/:id" element={<CoinDetails />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/analytics" element={<Analytics />} />
       </Routes>
